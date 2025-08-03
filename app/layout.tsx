@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   title: "WorkForce Pro - Employee Management System",
   description:
     "Modern employee management with salary tracking, attendance, and direct payments",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({
