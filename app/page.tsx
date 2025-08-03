@@ -1,28 +1,39 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useAuth } from "@/contexts/auth-context"
-import { LoginForm } from "@/components/auth/login-form"
-import { SignupForm } from "@/components/auth/signup-form"
-import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { EmployeeForm } from "@/components/employee-form"
-import { EmployeeList } from "@/components/employee-list"
-import { useEmployees } from "@/hooks/useEmployees"
-import { useSubscription } from "@/hooks/useSubscription"
-import type { Employee, DirectPayment } from "@/types/employee"
-import { Plus, Users, Sparkles, Crown, AlertCircle, LogOut, User } from "lucide-react"
-import { AttendanceTracker } from "@/components/attendance-tracker"
-import { ThemeToggle } from "@/components/theme-toggle"
-import { SubscriptionBanner } from "@/components/subscription-banner"
-import { SubscriptionModal } from "@/components/subscription-modal"
-import { DirectPaymentDialog } from "@/components/direct-payment-dialog"
+import { useState } from "react";
+import { useAuth } from "@/contexts/auth-context";
+import { LoginForm } from "@/components/auth/login-form";
+import { SignupForm } from "@/components/auth/signup-form";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { EmployeeForm } from "@/components/employee-form";
+import { EmployeeList } from "@/components/employee-list";
+import { useEmployees } from "@/hooks/useEmployees";
+import { useSubscription } from "@/hooks/useSubscription";
+import type { Employee, DirectPayment } from "@/types/employee";
+import {
+  Plus,
+  Users,
+  Sparkles,
+  Crown,
+  AlertCircle,
+  LogOut,
+  User,
+} from "lucide-react";
+import { AttendanceTracker } from "@/components/attendance-tracker";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { SubscriptionBanner } from "@/components/subscription-banner";
+import { SubscriptionModal } from "@/components/subscription-modal";
+import { DirectPaymentDialog } from "@/components/direct-payment-dialog";
 
 // Import utility functions
-import { calculateMonthlySalary, formatCurrency } from "@/utils/salary-calculator"
+import {
+  calculateMonthlySalary,
+  formatCurrency,
+} from "@/utils/salary-calculator";
 
 function AuthPage() {
-  const [isLogin, setIsLogin] = useState(true)
+  const [isLogin, setIsLogin] = useState(true);
 
   return (
     <div className="min-h-screen apple-bg flex items-center justify-center p-6">
@@ -34,57 +45,61 @@ function AuthPage() {
         )}
       </div>
     </div>
-  )
+  );
 }
 
 function MainApp() {
-  const { employees, loading, addEmployee, updateEmployee, deleteEmployee } = useEmployees()
-  const { tier, limits, canAddEmployee, isPro } = useSubscription()
-  const { user, userProfile, logout } = useAuth()
-  const [showForm, setShowForm] = useState(false)
-  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null)
-  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false)
-  const [selectedPaymentEmployee, setSelectedPaymentEmployee] = useState<Employee | null>(null)
+  const { employees, loading, addEmployee, updateEmployee, deleteEmployee } =
+    useEmployees();
+  const { tier, limits, canAddEmployee, isPro } = useSubscription();
+  const { user, userProfile, logout } = useAuth();
+  const [showForm, setShowForm] = useState(false);
+  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+  const [selectedPaymentEmployee, setSelectedPaymentEmployee] =
+    useState<Employee | null>(null);
 
-  const handleSubmit = (employeeData: Omit<Employee, "id" | "createdAt" | "updatedAt">) => {
+  const handleSubmit = (
+    employeeData: Omit<Employee, "id" | "createdAt" | "updatedAt">
+  ) => {
     if (editingEmployee) {
-      updateEmployee(editingEmployee.id, employeeData)
+      updateEmployee(editingEmployee.id, employeeData);
     } else {
-      addEmployee(employeeData)
+      addEmployee(employeeData);
     }
-    setShowForm(false)
-    setEditingEmployee(null)
-  }
+    setShowForm(false);
+    setEditingEmployee(null);
+  };
 
   const handleEdit = (employee: Employee) => {
-    setEditingEmployee(employee)
-    setShowForm(true)
-  }
+    setEditingEmployee(employee);
+    setShowForm(true);
+  };
 
   const handleCancel = () => {
-    setShowForm(false)
-    setEditingEmployee(null)
-  }
+    setShowForm(false);
+    setEditingEmployee(null);
+  };
 
   const handleAddEmployee = () => {
     if (!canAddEmployee(employees.length)) {
-      setShowSubscriptionModal(true)
-      return
+      setShowSubscriptionModal(true);
+      return;
     }
-    setShowForm(true)
-  }
+    setShowForm(true);
+  };
 
   const handlePaymentInitiated = (payment: DirectPayment) => {
     // Here you would typically save the payment to your backend
-    console.log("Payment initiated:", payment)
-    setSelectedPaymentEmployee(null)
-  }
+    console.log("Payment initiated:", payment);
+    setSelectedPaymentEmployee(null);
+  };
 
   const getTotalSalaryBudget = () => {
     return employees.reduce((total, employee) => {
-      return total + calculateMonthlySalary(employee)
-    }, 0)
-  }
+      return total + calculateMonthlySalary(employee);
+    }, 0);
+  };
 
   const getTotalAdvances = () => {
     return employees.reduce((total, employee) => {
@@ -93,9 +108,9 @@ function MainApp() {
         employee.advances
           .filter((advance) => advance.status !== "deducted")
           .reduce((empTotal, advance) => empTotal + advance.amount, 0)
-      )
-    }, 0)
-  }
+      );
+    }, 0);
+  };
 
   if (loading) {
     return (
@@ -103,21 +118,27 @@ function MainApp() {
         <div className="apple-card p-8 rounded-3xl">
           <div className="flex items-center space-x-3">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400"></div>
-            <p className="text-slate-700 dark:text-slate-300 font-medium">Loading your workspace...</p>
+            <p className="text-slate-700 dark:text-slate-300 font-medium">
+              Loading your workspace...
+            </p>
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   if (showForm) {
     return (
       <div className="min-h-screen apple-bg p-6">
         <div className="apple-float">
-          <EmployeeForm employee={editingEmployee || undefined} onSubmit={handleSubmit} onCancel={handleCancel} />
+          <EmployeeForm
+            employee={editingEmployee || undefined}
+            onSubmit={handleSubmit}
+            onCancel={handleCancel}
+          />
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -130,7 +151,9 @@ function MainApp() {
               <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
                 <Users className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">WorkForce Pro</h1>
+              <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                WorkForce Pro
+              </h1>
               {isPro && (
                 <div className="flex items-center space-x-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-2 py-1 rounded-full text-xs font-medium">
                   <Crown className="w-3 h-3" />
@@ -189,8 +212,9 @@ function MainApp() {
               </span>
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed mb-8">
-              Streamline your team management with intelligent salary tracking, advance payments, direct employee
-              payments, and comprehensive analytics.
+              Streamline your team management with intelligent salary tracking,
+              advance payments, direct employee payments, and comprehensive
+              analytics.
             </p>
           </div>
 
@@ -216,12 +240,20 @@ function MainApp() {
           <div className="apple-card p-8 rounded-3xl apple-hover apple-float">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-600 dark:text-gray-400 font-medium mb-2">Total Employees</p>
+                <p className="text-gray-600 dark:text-gray-400 font-medium mb-2">
+                  Total Employees
+                </p>
                 <p className="text-4xl font-bold apple-text-gradient">
                   {employees.length}
-                  {!isPro && <span className="text-lg text-gray-500 dark:text-gray-500">/{limits.maxEmployees}</span>}
+                  {!isPro && (
+                    <span className="text-lg text-gray-500 dark:text-gray-500">
+                      /{limits.maxEmployees}
+                    </span>
+                  )}
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">Active in system</p>
+                <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
+                  Active in system
+                </p>
               </div>
               <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
                 <Users className="w-8 h-8 text-white" />
@@ -232,11 +264,15 @@ function MainApp() {
           <div className="apple-card p-8 rounded-3xl apple-hover apple-float-delayed">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-600 dark:text-gray-400 font-medium mb-2">Salary Budget</p>
+                <p className="text-gray-600 dark:text-gray-400 font-medium mb-2">
+                  Salary Budget
+                </p>
                 <p className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-400 dark:to-emerald-400 bg-clip-text text-transparent">
                   {formatCurrency(getTotalSalaryBudget() - getTotalAdvances())}
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">After advances</p>
+                <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
+                  After advances
+                </p>
               </div>
               <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
                 <span className="text-2xl text-white font-bold">₹</span>
@@ -247,11 +283,15 @@ function MainApp() {
           <div className="apple-card p-8 rounded-3xl apple-hover apple-float">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-600 dark:text-gray-400 font-medium mb-2">Outstanding</p>
+                <p className="text-gray-600 dark:text-gray-400 font-medium mb-2">
+                  Outstanding
+                </p>
                 <p className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-red-600 dark:from-orange-400 dark:to-red-400 bg-clip-text text-transparent">
                   {formatCurrency(getTotalAdvances())}
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">Pending deductions</p>
+                <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
+                  Pending deductions
+                </p>
               </div>
               <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center shadow-lg">
                 <span className="text-2xl text-white font-bold">₹</span>
@@ -289,14 +329,20 @@ function MainApp() {
             </TabsContent>
 
             <TabsContent value="attendance" className="space-y-6">
-              <AttendanceTracker employees={employees} updateEmployee={updateEmployee} />
+              <AttendanceTracker
+                employees={employees}
+                updateEmployee={updateEmployee}
+              />
             </TabsContent>
           </Tabs>
         </div>
       </div>
 
       {/* Modals */}
-      <SubscriptionModal isOpen={showSubscriptionModal} onClose={() => setShowSubscriptionModal(false)} />
+      <SubscriptionModal
+        isOpen={showSubscriptionModal}
+        onClose={() => setShowSubscriptionModal(false)}
+      />
 
       {selectedPaymentEmployee && (
         <DirectPaymentDialog
@@ -306,11 +352,11 @@ function MainApp() {
         />
       )}
     </div>
-  )
+  );
 }
 
 export default function EmployeeManagement() {
-  const { user, loading } = useAuth()
+  const { user, loading } = useAuth();
 
   if (loading) {
     return (
@@ -318,12 +364,14 @@ export default function EmployeeManagement() {
         <div className="apple-card p-8 rounded-3xl">
           <div className="flex items-center space-x-3">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400"></div>
-            <p className="text-slate-700 dark:text-slate-300 font-medium">Loading...</p>
+            <p className="text-slate-700 dark:text-slate-300 font-medium">
+              Loading...
+            </p>
           </div>
         </div>
       </div>
-    )
+    );
   }
 
-  return user ? <MainApp /> : <AuthPage />
+  return user ? <MainApp /> : <AuthPage />;
 }

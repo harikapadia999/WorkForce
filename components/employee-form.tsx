@@ -1,22 +1,45 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import type { Employee, SalaryType, SalaryConfig } from "@/types/employee"
-import { SalaryConfigForm } from "./salary-config-form"
-import { ArrowLeft, User, Save, Sparkles, Building, Mail, Phone, Calendar, DollarSign, Banknote } from "lucide-react"
+import type React from "react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import type { Employee, SalaryType, SalaryConfig } from "@/types/employee";
+import { SalaryConfigForm } from "./salary-config-form";
+import {
+  ArrowLeft,
+  User,
+  Save,
+  Sparkles,
+  Building,
+  Mail,
+  Phone,
+  Calendar,
+  DollarSign,
+  Banknote,
+} from "lucide-react";
 
 interface EmployeeFormProps {
-  employee?: Employee
-  onSubmit: (employee: Omit<Employee, "id" | "createdAt" | "updatedAt">) => void
-  onCancel: () => void
+  employee?: Employee;
+  onSubmit: (
+    employee: Omit<Employee, "id" | "createdAt" | "updatedAt">
+  ) => void;
+  onCancel: () => void;
 }
 
-export function EmployeeForm({ employee, onSubmit, onCancel }: EmployeeFormProps) {
+export function EmployeeForm({
+  employee,
+  onSubmit,
+  onCancel,
+}: EmployeeFormProps) {
   const [formData, setFormData] = useState({
     name: employee?.name || "",
     email: employee?.email || "",
@@ -28,26 +51,29 @@ export function EmployeeForm({ employee, onSubmit, onCancel }: EmployeeFormProps
     salaryConfig: employee?.salaryConfig || ({} as SalaryConfig),
     advances: employee?.advances || [],
     paymentDetails: employee?.paymentDetails || { preferredMethod: "bank" },
-  })
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onSubmit(formData)
-  }
+    e.preventDefault();
+    onSubmit(formData);
+  };
 
   const handleSalaryConfigChange = (config: SalaryConfig) => {
-    setFormData((prev) => ({ ...prev, salaryConfig: config }))
-  }
+    setFormData((prev) => ({ ...prev, salaryConfig: config }));
+  };
 
-  const handlePaymentDetailsChange = (field: string, value: string | boolean) => {
+  const handlePaymentDetailsChange = (
+    field: string,
+    value: string | boolean
+  ) => {
     setFormData((prev) => ({
       ...prev,
       paymentDetails: {
         ...prev.paymentDetails,
         [field]: value,
       },
-    }))
-  }
+    }));
+  };
 
   const handleBankAccountChange = (field: string, value: string) => {
     setFormData((prev) => ({
@@ -59,8 +85,8 @@ export function EmployeeForm({ employee, onSubmit, onCancel }: EmployeeFormProps
           [field]: value,
         },
       },
-    }))
-  }
+    }));
+  };
 
   const handleUpiChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({
@@ -72,8 +98,8 @@ export function EmployeeForm({ employee, onSubmit, onCancel }: EmployeeFormProps
           [field]: value,
         },
       },
-    }))
-  }
+    }));
+  };
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -105,7 +131,9 @@ export function EmployeeForm({ employee, onSubmit, onCancel }: EmployeeFormProps
                 <User className="w-10 h-10 text-white" />
               </div>
               <div>
-                <h1 className="text-4xl font-bold mb-2">{employee ? "Edit Employee" : "Add New Employee"}</h1>
+                <h1 className="text-4xl font-bold mb-2">
+                  {employee ? "Edit Employee" : "Add New Employee"}
+                </h1>
                 <p className="text-blue-100 text-lg">
                   {employee
                     ? "Update employee information and salary details"
@@ -126,21 +154,30 @@ export function EmployeeForm({ employee, onSubmit, onCancel }: EmployeeFormProps
                   <User className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Personal Information</h3>
-                  <p className="text-gray-600 dark:text-gray-400">Basic employee details and contact information</p>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                    Personal Information
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Basic employee details and contact information
+                  </p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-3">
-                  <Label htmlFor="name" className="text-gray-700 dark:text-gray-300 font-semibold flex items-center">
+                  <Label
+                    htmlFor="name"
+                    className="text-gray-700 dark:text-gray-300 font-semibold flex items-center"
+                  >
                     <User className="w-4 h-4 mr-2" />
                     Full Name
                   </Label>
                   <Input
                     id="name"
                     value={formData.name}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, name: e.target.value }))
+                    }
                     required
                     className="apple-input rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 bg-gray-50 dark:bg-gray-700 px-4 py-3 text-lg transition-all duration-300"
                     placeholder="Enter full name"
@@ -148,7 +185,10 @@ export function EmployeeForm({ employee, onSubmit, onCancel }: EmployeeFormProps
                 </div>
 
                 <div className="space-y-3">
-                  <Label htmlFor="email" className="text-gray-700 dark:text-gray-300 font-semibold flex items-center">
+                  <Label
+                    htmlFor="email"
+                    className="text-gray-700 dark:text-gray-300 font-semibold flex items-center"
+                  >
                     <Mail className="w-4 h-4 mr-2" />
                     Email Address
                   </Label>
@@ -156,7 +196,12 @@ export function EmployeeForm({ employee, onSubmit, onCancel }: EmployeeFormProps
                     id="email"
                     type="email"
                     value={formData.email}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        email: e.target.value,
+                      }))
+                    }
                     required
                     className="apple-input rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 bg-gray-50 dark:bg-gray-700 px-4 py-3 text-lg transition-all duration-300"
                     placeholder="Enter email address"
@@ -164,14 +209,22 @@ export function EmployeeForm({ employee, onSubmit, onCancel }: EmployeeFormProps
                 </div>
 
                 <div className="space-y-3">
-                  <Label htmlFor="phone" className="text-gray-700 dark:text-gray-300 font-semibold flex items-center">
+                  <Label
+                    htmlFor="phone"
+                    className="text-gray-700 dark:text-gray-300 font-semibold flex items-center"
+                  >
                     <Phone className="w-4 h-4 mr-2" />
                     Phone Number
                   </Label>
                   <Input
                     id="phone"
                     value={formData.phone}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        phone: e.target.value,
+                      }))
+                    }
                     required
                     className="apple-input rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 bg-gray-50 dark:bg-gray-700 px-4 py-3 text-lg transition-all duration-300"
                     placeholder="Enter phone number"
@@ -189,7 +242,12 @@ export function EmployeeForm({ employee, onSubmit, onCancel }: EmployeeFormProps
                   <Input
                     id="position"
                     value={formData.position}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, position: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        position: e.target.value,
+                      }))
+                    }
                     required
                     className="apple-input rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 bg-gray-50 dark:bg-gray-700 px-4 py-3 text-lg transition-all duration-300"
                     placeholder="Enter job position"
@@ -207,7 +265,12 @@ export function EmployeeForm({ employee, onSubmit, onCancel }: EmployeeFormProps
                   <Input
                     id="department"
                     value={formData.department}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, department: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        department: e.target.value,
+                      }))
+                    }
                     required
                     className="apple-input rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 bg-gray-50 dark:bg-gray-700 px-4 py-3 text-lg transition-all duration-300"
                     placeholder="Enter department"
@@ -226,7 +289,12 @@ export function EmployeeForm({ employee, onSubmit, onCancel }: EmployeeFormProps
                     id="hireDate"
                     type="date"
                     value={formData.hireDate}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, hireDate: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        hireDate: e.target.value,
+                      }))
+                    }
                     required
                     className="apple-input rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 bg-gray-50 dark:bg-gray-700 px-4 py-3 text-lg transition-all duration-300"
                   />
@@ -241,45 +309,74 @@ export function EmployeeForm({ employee, onSubmit, onCancel }: EmployeeFormProps
                   <DollarSign className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Salary Configuration</h3>
-                  <p className="text-gray-600 dark:text-gray-400">Configure salary structure and payment terms</p>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                    Salary Configuration
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Configure salary structure and payment terms
+                  </p>
                 </div>
               </div>
 
               <div className="space-y-6">
                 <div className="space-y-3">
-                  <Label htmlFor="salaryType" className="text-gray-700 dark:text-gray-300 font-semibold">
+                  <Label
+                    htmlFor="salaryType"
+                    className="text-gray-700 dark:text-gray-300 font-semibold"
+                  >
                     Salary Type
                   </Label>
                   <Select
                     value={formData.salaryType}
                     onValueChange={(value: SalaryType) =>
-                      setFormData((prev) => ({ ...prev, salaryType: value, salaryConfig: {} }))
+                      setFormData((prev) => ({
+                        ...prev,
+                        salaryType: value,
+                        salaryConfig: {},
+                      }))
                     }
                   >
                     <SelectTrigger className="apple-input rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 bg-gray-50 dark:bg-gray-700 px-4 py-3 text-lg">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="apple-card rounded-xl border-0 shadow-2xl">
-                      <SelectItem value="hourly" className="py-3 px-4 text-base">
+                      <SelectItem
+                        value="hourly"
+                        className="py-3 px-4 text-base"
+                      >
                         ⏰ Hourly Rate
                       </SelectItem>
                       <SelectItem value="daily" className="py-3 px-4 text-base">
                         📅 Daily Rate
                       </SelectItem>
-                      <SelectItem value="monthly" className="py-3 px-4 text-base">
+                      <SelectItem
+                        value="monthly"
+                        className="py-3 px-4 text-base"
+                      >
                         📊 Monthly Salary
                       </SelectItem>
-                      <SelectItem value="piece-rate" className="py-3 px-4 text-base">
+                      <SelectItem
+                        value="piece-rate"
+                        className="py-3 px-4 text-base"
+                      >
                         🔢 Piece Rate
                       </SelectItem>
-                      <SelectItem value="weight-based" className="py-3 px-4 text-base">
+                      <SelectItem
+                        value="weight-based"
+                        className="py-3 px-4 text-base"
+                      >
                         ⚖️ Weight Based
                       </SelectItem>
-                      <SelectItem value="meter-based" className="py-3 px-4 text-base">
+                      <SelectItem
+                        value="meter-based"
+                        className="py-3 px-4 text-base"
+                      >
                         📏 Meter Based
                       </SelectItem>
-                      <SelectItem value="dynamic-date" className="py-3 px-4 text-base">
+                      <SelectItem
+                        value="dynamic-date"
+                        className="py-3 px-4 text-base"
+                      >
                         📈 Dynamic Date Based
                       </SelectItem>
                     </SelectContent>
@@ -301,19 +398,28 @@ export function EmployeeForm({ employee, onSubmit, onCancel }: EmployeeFormProps
                   <Banknote className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Payment Details</h3>
-                  <p className="text-gray-600 dark:text-gray-400">Configure how payments are made to the employee</p>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                    Payment Details
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Configure how payments are made to the employee
+                  </p>
                 </div>
               </div>
 
               <div className="space-y-6">
                 <div className="space-y-3">
-                  <Label htmlFor="preferredMethod" className="text-gray-700 dark:text-gray-300 font-semibold">
+                  <Label
+                    htmlFor="preferredMethod"
+                    className="text-gray-700 dark:text-gray-300 font-semibold"
+                  >
                     Preferred Payment Method
                   </Label>
                   <Select
                     value={formData.paymentDetails.preferredMethod}
-                    onValueChange={(value: "bank" | "upi") => handlePaymentDetailsChange("preferredMethod", value)}
+                    onValueChange={(value: "bank" | "upi") =>
+                      handlePaymentDetailsChange("preferredMethod", value)
+                    }
                   >
                     <SelectTrigger className="apple-input rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-purple-500 dark:focus:border-purple-400 bg-gray-50 dark:bg-gray-700 px-4 py-3 text-lg">
                       <SelectValue />
@@ -332,49 +438,85 @@ export function EmployeeForm({ employee, onSubmit, onCancel }: EmployeeFormProps
                 {formData.paymentDetails.preferredMethod === "bank" && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-3">
-                      <Label htmlFor="accountHolderName" className="text-gray-700 dark:text-gray-300 font-semibold">
+                      <Label
+                        htmlFor="accountHolderName"
+                        className="text-gray-700 dark:text-gray-300 font-semibold"
+                      >
                         Account Holder Name
                       </Label>
                       <Input
                         id="accountHolderName"
-                        value={formData.paymentDetails.bankAccount?.accountHolderName || ""}
-                        onChange={(e) => handleBankAccountChange("accountHolderName", e.target.value)}
+                        value={
+                          formData.paymentDetails.bankAccount
+                            ?.accountHolderName || ""
+                        }
+                        onChange={(e) =>
+                          handleBankAccountChange(
+                            "accountHolderName",
+                            e.target.value
+                          )
+                        }
                         className="apple-input rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-purple-500 dark:focus:border-purple-400 bg-gray-50 dark:bg-gray-700 px-4 py-3 text-lg"
                         placeholder="e.g., John Doe"
                       />
                     </div>
                     <div className="space-y-3">
-                      <Label htmlFor="bankName" className="text-gray-700 dark:text-gray-300 font-semibold">
+                      <Label
+                        htmlFor="bankName"
+                        className="text-gray-700 dark:text-gray-300 font-semibold"
+                      >
                         Bank Name
                       </Label>
                       <Input
                         id="bankName"
-                        value={formData.paymentDetails.bankAccount?.bankName || ""}
-                        onChange={(e) => handleBankAccountChange("bankName", e.target.value)}
+                        value={
+                          formData.paymentDetails.bankAccount?.bankName || ""
+                        }
+                        onChange={(e) =>
+                          handleBankAccountChange("bankName", e.target.value)
+                        }
                         className="apple-input rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-purple-500 dark:focus:border-purple-400 bg-gray-50 dark:bg-gray-700 px-4 py-3 text-lg"
                         placeholder="e.g., State Bank of India"
                       />
                     </div>
                     <div className="space-y-3">
-                      <Label htmlFor="accountNumber" className="text-gray-700 dark:text-gray-300 font-semibold">
+                      <Label
+                        htmlFor="accountNumber"
+                        className="text-gray-700 dark:text-gray-300 font-semibold"
+                      >
                         Account Number
                       </Label>
                       <Input
                         id="accountNumber"
-                        value={formData.paymentDetails.bankAccount?.accountNumber || ""}
-                        onChange={(e) => handleBankAccountChange("accountNumber", e.target.value)}
+                        value={
+                          formData.paymentDetails.bankAccount?.accountNumber ||
+                          ""
+                        }
+                        onChange={(e) =>
+                          handleBankAccountChange(
+                            "accountNumber",
+                            e.target.value
+                          )
+                        }
                         className="apple-input rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-purple-500 dark:focus:border-purple-400 bg-gray-50 dark:bg-gray-700 px-4 py-3 text-lg"
                         placeholder="e.g., 1234567890"
                       />
                     </div>
                     <div className="space-y-3">
-                      <Label htmlFor="ifscCode" className="text-gray-700 dark:text-gray-300 font-semibold">
+                      <Label
+                        htmlFor="ifscCode"
+                        className="text-gray-700 dark:text-gray-300 font-semibold"
+                      >
                         IFSC Code
                       </Label>
                       <Input
                         id="ifscCode"
-                        value={formData.paymentDetails.bankAccount?.ifscCode || ""}
-                        onChange={(e) => handleBankAccountChange("ifscCode", e.target.value)}
+                        value={
+                          formData.paymentDetails.bankAccount?.ifscCode || ""
+                        }
+                        onChange={(e) =>
+                          handleBankAccountChange("ifscCode", e.target.value)
+                        }
                         className="apple-input rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-purple-500 dark:focus:border-purple-400 bg-gray-50 dark:bg-gray-700 px-4 py-3 text-lg"
                         placeholder="e.g., SBIN0000001"
                       />
@@ -384,7 +526,10 @@ export function EmployeeForm({ employee, onSubmit, onCancel }: EmployeeFormProps
 
                 {formData.paymentDetails.preferredMethod === "upi" && (
                   <div className="space-y-3">
-                    <Label htmlFor="upiId" className="text-gray-700 dark:text-gray-300 font-semibold">
+                    <Label
+                      htmlFor="upiId"
+                      className="text-gray-700 dark:text-gray-300 font-semibold"
+                    >
                       UPI ID
                     </Label>
                     <Input
@@ -422,5 +567,5 @@ export function EmployeeForm({ employee, onSubmit, onCancel }: EmployeeFormProps
         </div>
       </div>
     </div>
-  )
+  );
 }

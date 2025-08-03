@@ -1,13 +1,31 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import type { Employee } from "@/types/employee"
-import type { AttendanceRecord } from "@/types/attendance"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import type { Employee } from "@/types/employee";
+import type { AttendanceRecord } from "@/types/attendance";
 import {
   Calendar,
   Mail,
@@ -25,33 +43,41 @@ import {
   Award,
   Target,
   Zap,
-} from "lucide-react"
-import { calculateNetSalary, formatCurrency } from "@/utils/salary-calculator"
+} from "lucide-react";
+import { calculateNetSalary, formatCurrency } from "@/utils/salary-calculator";
 
 interface EmployeeProfileProps {
-  employee: Employee
-  onClose: () => void
+  employee: Employee;
+  onClose: () => void;
 }
 
 export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
-  const [calendarView, setCalendarView] = useState<"yearly" | "monthly">("yearly")
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [calendarView, setCalendarView] = useState<"yearly" | "monthly">(
+    "yearly"
+  );
 
   const getAttendanceCalendar = (year: number, month: number) => {
-    const calendar = []
-    const startDate = new Date(year, month, 1)
-    const endDate = new Date(year, month + 1, 0) // Last day of the month
+    const calendar = [];
+    const startDate = new Date(year, month, 1);
+    const endDate = new Date(year, month + 1, 0); // Last day of the month
 
     // Add empty cells for days before the first day of the month
-    const firstDayOfWeek = startDate.getDay()
+    const firstDayOfWeek = startDate.getDay();
     for (let i = 0; i < firstDayOfWeek; i++) {
-      calendar.push(null)
+      calendar.push(null);
     }
 
-    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-      const dateStr = d.toISOString().split("T")[0]
-      const record = employee.attendanceRecords?.find((r) => r.date === dateStr)
+    for (
+      let d = new Date(startDate);
+      d <= endDate;
+      d.setDate(d.getDate() + 1)
+    ) {
+      const dateStr = d.toISOString().split("T")[0];
+      const record = employee.attendanceRecords?.find(
+        (r) => r.date === dateStr
+      );
 
       calendar.push({
         date: new Date(d),
@@ -60,54 +86,58 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
         dayOfWeek: d.getDay(),
         isToday: dateStr === new Date().toISOString().split("T")[0],
         isWeekend: d.getDay() === 0 || d.getDay() === 6,
-      })
+      });
     }
 
-    return calendar
-  }
+    return calendar;
+  };
 
   const getStatusColor = (record?: AttendanceRecord) => {
-    if (!record) return "bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700"
+    if (!record)
+      return "bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700";
 
     switch (record.status) {
       case "present":
-        return "bg-gradient-to-br from-green-400 to-emerald-500 border-green-300 shadow-green-200 dark:shadow-green-900/30"
+        return "bg-gradient-to-br from-green-400 to-emerald-500 border-green-300 shadow-green-200 dark:shadow-green-900/30";
       case "absent":
-        return "bg-gradient-to-br from-red-400 to-rose-500 border-red-300 shadow-red-200 dark:shadow-red-900/30"
+        return "bg-gradient-to-br from-red-400 to-rose-500 border-red-300 shadow-red-200 dark:shadow-red-900/30";
       case "half-day":
-        return "bg-gradient-to-br from-yellow-400 to-orange-500 border-yellow-300 shadow-yellow-200 dark:shadow-yellow-900/30"
+        return "bg-gradient-to-br from-yellow-400 to-orange-500 border-yellow-300 shadow-yellow-200 dark:shadow-yellow-900/30";
       case "early-leave":
-        return "bg-gradient-to-br from-orange-400 to-red-500 border-orange-300 shadow-orange-200 dark:shadow-orange-900/30"
+        return "bg-gradient-to-br from-orange-400 to-red-500 border-orange-300 shadow-orange-200 dark:shadow-orange-900/30";
       case "late-come":
-        return "bg-gradient-to-br from-blue-400 to-indigo-500 border-blue-300 shadow-blue-200 dark:shadow-blue-900/30"
+        return "bg-gradient-to-br from-blue-400 to-indigo-500 border-blue-300 shadow-blue-200 dark:shadow-blue-900/30";
       default:
-        return "bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700"
+        return "bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700";
     }
-  }
+  };
 
   const getStatusIcon = (record?: AttendanceRecord) => {
-    if (!record) return null
+    if (!record) return null;
 
-    const iconClass = "w-3 h-3 text-white drop-shadow-sm"
+    const iconClass = "w-3 h-3 text-white drop-shadow-sm";
 
     switch (record.status) {
       case "present":
-        return <UserCheck className={iconClass} />
+        return <UserCheck className={iconClass} />;
       case "absent":
-        return <UserX className={iconClass} />
+        return <UserX className={iconClass} />;
       case "half-day":
-        return <Clock className={iconClass} />
+        return <Clock className={iconClass} />;
       case "early-leave":
-        return <AlertTriangle className={iconClass} />
+        return <AlertTriangle className={iconClass} />;
       case "late-come":
-        return <Clock className={iconClass} />
+        return <Clock className={iconClass} />;
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   const getAttendanceStats = (year: number) => {
-    const yearRecords = employee.attendanceRecords?.filter((r) => new Date(r.date).getFullYear() === year) || []
+    const yearRecords =
+      employee.attendanceRecords?.filter(
+        (r) => new Date(r.date).getFullYear() === year
+      ) || [];
 
     return {
       present: yearRecords.filter((r) => r.status === "present").length,
@@ -116,15 +146,17 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
       earlyLeave: yearRecords.filter((r) => r.status === "early-leave").length,
       lateCome: yearRecords.filter((r) => r.status === "late-come").length,
       total: yearRecords.length,
-    }
-  }
+    };
+  };
 
   const getMonthlyStats = (year: number, month: number) => {
     const monthRecords =
       employee.attendanceRecords?.filter((r) => {
-        const recordDate = new Date(r.date)
-        return recordDate.getFullYear() === year && recordDate.getMonth() === month
-      }) || []
+        const recordDate = new Date(r.date);
+        return (
+          recordDate.getFullYear() === year && recordDate.getMonth() === month
+        );
+      }) || [];
 
     return {
       present: monthRecords.filter((r) => r.status === "present").length,
@@ -133,50 +165,57 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
       earlyLeave: monthRecords.filter((r) => r.status === "early-leave").length,
       lateCome: monthRecords.filter((r) => r.status === "late-come").length,
       total: monthRecords.length,
-    }
-  }
+    };
+  };
 
   const getAttendancePercentage = (stats: any) => {
-    if (stats.total === 0) return 0
-    return Math.round((stats.present / stats.total) * 100)
-  }
+    if (stats.total === 0) return 0;
+    return Math.round((stats.present / stats.total) * 100);
+  };
 
   // Add this function to get monthly attendance summary
   const getMonthlyAttendanceSummary = (year: number, month: number) => {
     const monthRecords =
       employee.attendanceRecords?.filter((r) => {
-        const recordDate = new Date(r.date)
-        return recordDate.getFullYear() === year && recordDate.getMonth() === month
-      }) || []
+        const recordDate = new Date(r.date);
+        return (
+          recordDate.getFullYear() === year && recordDate.getMonth() === month
+        );
+      }) || [];
 
-    const totalDays = new Date(year, month + 1, 0).getDate()
-    const workingDays = monthRecords.length
-    const presentDays = monthRecords.filter((r) => r.status === "present").length
-    const attendanceRate = workingDays > 0 ? Math.round((presentDays / workingDays) * 100) : 0
+    const totalDays = new Date(year, month + 1, 0).getDate();
+    const workingDays = monthRecords.length;
+    const presentDays = monthRecords.filter(
+      (r) => r.status === "present"
+    ).length;
+    const attendanceRate =
+      workingDays > 0 ? Math.round((presentDays / workingDays) * 100) : 0;
 
     return {
       totalRecords: workingDays,
       presentDays,
       attendanceRate,
       hasData: workingDays > 0,
-    }
-  }
+    };
+  };
 
   // Add this function to render mini month calendar
   const renderMiniMonth = (year: number, month: number) => {
-    const monthStart = new Date(year, month, 1)
-    const monthEnd = new Date(year, month + 1, 0)
-    const startDate = new Date(monthStart)
-    startDate.setDate(startDate.getDate() - monthStart.getDay())
+    const monthStart = new Date(year, month, 1);
+    const monthEnd = new Date(year, month + 1, 0);
+    const startDate = new Date(monthStart);
+    startDate.setDate(startDate.getDate() - monthStart.getDay());
 
-    const days = []
-    const currentDate = new Date(startDate)
+    const days = [];
+    const currentDate = new Date(startDate);
 
     // Generate 6 weeks (42 days) for consistent grid
     for (let i = 0; i < 42; i++) {
-      const dateStr = currentDate.toISOString().split("T")[0]
-      const record = employee.attendanceRecords?.find((r) => r.date === dateStr)
-      const isCurrentMonth = currentDate.getMonth() === month
+      const dateStr = currentDate.toISOString().split("T")[0];
+      const record = employee.attendanceRecords?.find(
+        (r) => r.date === dateStr
+      );
+      const isCurrentMonth = currentDate.getMonth() === month;
 
       days.push({
         date: new Date(currentDate),
@@ -184,18 +223,18 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
         record,
         isCurrentMonth,
         day: currentDate.getDate(),
-      })
+      });
 
-      currentDate.setDate(currentDate.getDate() + 1)
+      currentDate.setDate(currentDate.getDate() + 1);
     }
 
-    return days
-  }
+    return days;
+  };
 
-  const calendar = getAttendanceCalendar(selectedYear, selectedMonth)
-  const yearStats = getAttendanceStats(selectedYear)
-  const monthStats = getMonthlyStats(selectedYear, selectedMonth)
-  const attendancePercentage = getAttendancePercentage(monthStats)
+  const calendar = getAttendanceCalendar(selectedYear, selectedMonth);
+  const yearStats = getAttendanceStats(selectedYear);
+  const monthStats = getMonthlyStats(selectedYear, selectedMonth);
+  const attendancePercentage = getAttendancePercentage(monthStats);
 
   const months = [
     "January",
@@ -210,26 +249,26 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
     "October",
     "November",
     "December",
-  ]
-  const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+  ];
+  const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   const navigateMonth = (direction: "prev" | "next") => {
     if (direction === "prev") {
       if (selectedMonth === 0) {
-        setSelectedMonth(11)
-        setSelectedYear(selectedYear - 1)
+        setSelectedMonth(11);
+        setSelectedYear(selectedYear - 1);
       } else {
-        setSelectedMonth(selectedMonth - 1)
+        setSelectedMonth(selectedMonth - 1);
       }
     } else {
       if (selectedMonth === 11) {
-        setSelectedMonth(0)
-        setSelectedYear(selectedYear + 1)
+        setSelectedMonth(0);
+        setSelectedYear(selectedYear + 1);
       } else {
-        setSelectedMonth(selectedMonth + 1)
+        setSelectedMonth(selectedMonth + 1);
       }
     }
-  }
+  };
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
@@ -256,20 +295,22 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
                   </span>
                 </div>
                 <div>
-                  <DialogTitle className="text-3xl font-bold mb-2">{employee.name}</DialogTitle>
+                  <DialogTitle className="text-3xl font-bold mb-2">
+                    {employee.name}
+                  </DialogTitle>
                   <p className="text-indigo-100 text-lg">
                     {employee.position} • {employee.department}
                   </p>
                 </div>
               </div>
-              <Button
+              {/* <Button
                 variant="ghost"
                 size="sm"
                 onClick={onClose}
                 className="text-white hover:bg-white/20 rounded-xl p-3 transition-all duration-300 hover:scale-105"
               >
                 <X className="w-5 h-5" />
-              </Button>
+              </Button> */}
             </div>
 
             {/* Quick Stats */}
@@ -280,7 +321,9 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
                     <Award className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-white">{attendancePercentage}%</p>
+                    <p className="text-2xl font-bold text-white">
+                      {attendancePercentage}%
+                    </p>
                     <p className="text-indigo-100 text-sm">This Month</p>
                   </div>
                 </div>
@@ -291,7 +334,9 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
                     <Target className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-white">{monthStats.present}</p>
+                    <p className="text-2xl font-bold text-white">
+                      {monthStats.present}
+                    </p>
                     <p className="text-indigo-100 text-sm">Present Days</p>
                   </div>
                 </div>
@@ -302,7 +347,9 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
                     <TrendingUp className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-white">{yearStats.total}</p>
+                    <p className="text-2xl font-bold text-white">
+                      {yearStats.total}
+                    </p>
                     <p className="text-indigo-100 text-sm">Total Records</p>
                   </div>
                 </div>
@@ -313,7 +360,9 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
                     <Zap className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-white">{formatCurrency(calculateNetSalary(employee))}</p>
+                    <p className="text-2xl font-bold text-white">
+                      {formatCurrency(calculateNetSalary(employee))}
+                    </p>
                     <p className="text-indigo-100 text-sm">Net Salary</p>
                   </div>
                 </div>
@@ -340,8 +389,12 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
                     <Mail className="w-4 h-4 text-white" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Email</p>
-                    <p className="font-medium text-gray-900 dark:text-gray-100">{employee.email}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Email
+                    </p>
+                    <p className="font-medium text-gray-900 dark:text-gray-100">
+                      {employee.email}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-4 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl apple-hover">
@@ -349,8 +402,12 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
                     <Phone className="w-4 h-4 text-white" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Phone</p>
-                    <p className="font-medium text-gray-900 dark:text-gray-100">{employee.phone}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Phone
+                    </p>
+                    <p className="font-medium text-gray-900 dark:text-gray-100">
+                      {employee.phone}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-4 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl apple-hover">
@@ -358,8 +415,12 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
                     <Building className="w-4 h-4 text-white" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Department</p>
-                    <p className="font-medium text-gray-900 dark:text-gray-100">{employee.department}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Department
+                    </p>
+                    <p className="font-medium text-gray-900 dark:text-gray-100">
+                      {employee.department}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-4 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl apple-hover">
@@ -367,7 +428,9 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
                     <Calendar className="w-4 h-4 text-white" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Hire Date</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Hire Date
+                    </p>
                     <p className="font-medium text-gray-900 dark:text-gray-100">
                       {new Date(employee.hireDate).toLocaleDateString("en-IN", {
                         year: "numeric",
@@ -391,23 +454,32 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
               </CardHeader>
               <CardContent className="p-6 space-y-4">
                 <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border border-green-200 dark:border-green-800/30">
-                  <p className="text-sm text-green-700 dark:text-green-400 mb-1">Salary Type</p>
+                  <p className="text-sm text-green-700 dark:text-green-400 mb-1">
+                    Salary Type
+                  </p>
                   <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl px-3 py-1 font-medium shadow-lg">
                     {employee.salaryType.replace("-", " ").toUpperCase()}
                   </Badge>
                 </div>
                 <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200 dark:border-blue-800/30">
-                  <p className="text-sm text-blue-700 dark:text-blue-400 mb-2">Net Monthly Salary</p>
+                  <p className="text-sm text-blue-700 dark:text-blue-400 mb-2">
+                    Net Monthly Salary
+                  </p>
                   <p className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
                     {formatCurrency(calculateNetSalary(employee))}
                   </p>
                 </div>
-                {employee.advances.filter((a) => a.status === "approved").length > 0 && (
+                {employee.advances.filter((a) => a.status === "approved")
+                  .length > 0 && (
                   <div className="p-4 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-xl border border-yellow-200 dark:border-yellow-800/30">
-                    <p className="text-sm text-yellow-700 dark:text-yellow-400 mb-2">Outstanding Advances</p>
+                    <p className="text-sm text-yellow-700 dark:text-yellow-400 mb-2">
+                      Outstanding Advances
+                    </p>
                     <p className="text-2xl font-bold text-yellow-800 dark:text-yellow-300">
                       {formatCurrency(
-                        employee.advances.filter((a) => a.status === "approved").reduce((sum, a) => sum + a.amount, 0),
+                        employee.advances
+                          .filter((a) => a.status === "approved")
+                          .reduce((sum, a) => sum + a.amount, 0)
                       )}
                     </p>
                   </div>
@@ -428,19 +500,27 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
                 </CardTitle>
                 <Select
                   value={selectedYear.toString()}
-                  onValueChange={(value) => setSelectedYear(Number.parseInt(value))}
+                  onValueChange={(value) =>
+                    setSelectedYear(Number.parseInt(value))
+                  }
                 >
                   <SelectTrigger className="w-32 apple-input rounded-xl border-2 border-purple-200 dark:border-purple-700">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="apple-card rounded-xl border-0 shadow-2xl">
-                    {[new Date().getFullYear(), new Date().getFullYear() - 1, new Date().getFullYear() - 2].map(
-                      (year) => (
-                        <SelectItem key={year} value={year.toString()} className="py-3 px-4">
-                          {year}
-                        </SelectItem>
-                      ),
-                    )}
+                    {[
+                      new Date().getFullYear(),
+                      new Date().getFullYear() - 1,
+                      new Date().getFullYear() - 2,
+                    ].map((year) => (
+                      <SelectItem
+                        key={year}
+                        value={year.toString()}
+                        className="py-3 px-4"
+                      >
+                        {year}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -451,43 +531,67 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
                   <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg">
                     <UserCheck className="w-6 h-6 text-white" />
                   </div>
-                  <p className="text-3xl font-bold text-green-600 dark:text-green-400 mb-1">{yearStats.present}</p>
-                  <p className="text-sm font-medium text-green-700 dark:text-green-500">Present</p>
+                  <p className="text-3xl font-bold text-green-600 dark:text-green-400 mb-1">
+                    {yearStats.present}
+                  </p>
+                  <p className="text-sm font-medium text-green-700 dark:text-green-500">
+                    Present
+                  </p>
                 </div>
                 <div className="apple-card-inner rounded-2xl p-4 bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 border border-red-200 dark:border-red-800/30 apple-hover text-center">
                   <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg">
                     <UserX className="w-6 h-6 text-white" />
                   </div>
-                  <p className="text-3xl font-bold text-red-600 dark:text-red-400 mb-1">{yearStats.absent}</p>
-                  <p className="text-sm font-medium text-red-700 dark:text-red-500">Absent</p>
+                  <p className="text-3xl font-bold text-red-600 dark:text-red-400 mb-1">
+                    {yearStats.absent}
+                  </p>
+                  <p className="text-sm font-medium text-red-700 dark:text-red-500">
+                    Absent
+                  </p>
                 </div>
                 <div className="apple-card-inner rounded-2xl p-4 bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border border-yellow-200 dark:border-yellow-800/30 apple-hover text-center">
                   <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg">
                     <Clock className="w-6 h-6 text-white" />
                   </div>
-                  <p className="text-3xl font-bold text-yellow-600 dark:text-yellow-400 mb-1">{yearStats.halfDay}</p>
-                  <p className="text-sm font-medium text-yellow-700 dark:text-yellow-500">Half Day</p>
+                  <p className="text-3xl font-bold text-yellow-600 dark:text-yellow-400 mb-1">
+                    {yearStats.halfDay}
+                  </p>
+                  <p className="text-sm font-medium text-yellow-700 dark:text-yellow-500">
+                    Half Day
+                  </p>
                 </div>
                 <div className="apple-card-inner rounded-2xl p-4 bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border border-orange-200 dark:border-orange-800/30 apple-hover text-center">
                   <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg">
                     <AlertTriangle className="w-6 h-6 text-white" />
                   </div>
-                  <p className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-1">{yearStats.earlyLeave}</p>
-                  <p className="text-sm font-medium text-orange-700 dark:text-orange-500">Early Leave</p>
+                  <p className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-1">
+                    {yearStats.earlyLeave}
+                  </p>
+                  <p className="text-sm font-medium text-orange-700 dark:text-orange-500">
+                    Early Leave
+                  </p>
                 </div>
                 <div className="apple-card-inner rounded-2xl p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800/30 apple-hover text-center">
                   <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg">
                     <Clock className="w-6 h-6 text-white" />
                   </div>
-                  <p className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">{yearStats.lateCome}</p>
-                  <p className="text-sm font-medium text-blue-700 dark:text-blue-500">Late Come</p>
+                  <p className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">
+                    {yearStats.lateCome}
+                  </p>
+                  <p className="text-sm font-medium text-blue-700 dark:text-blue-500">
+                    Late Come
+                  </p>
                 </div>
                 <div className="apple-card-inner rounded-2xl p-4 bg-gradient-to-br from-gray-50 to-slate-50 dark:from-gray-900/20 dark:to-slate-900/20 border border-gray-200 dark:border-gray-800/30 apple-hover text-center">
                   <div className="w-12 h-12 bg-gradient-to-br from-gray-500 to-slate-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg">
                     <Target className="w-6 h-6 text-white" />
                   </div>
-                  <p className="text-3xl font-bold text-gray-600 dark:text-gray-400 mb-1">{yearStats.total}</p>
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-500">Total Days</p>
+                  <p className="text-3xl font-bold text-gray-600 dark:text-gray-400 mb-1">
+                    {yearStats.total}
+                  </p>
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-500">
+                    Total Days
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -552,7 +656,9 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
                         <ChevronLeft className="w-4 h-4" />
                       </Button>
                       <div className="text-center min-w-[80px]">
-                        <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">{selectedYear}</h3>
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                          {selectedYear}
+                        </h3>
                       </div>
                       <Button
                         variant="ghost"
@@ -576,8 +682,12 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
                       </Button>
 
                       <div className="text-center min-w-[140px]">
-                        <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">{months[selectedMonth]}</h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">{selectedYear}</p>
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                          {months[selectedMonth]}
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {selectedYear}
+                        </p>
                       </div>
 
                       <Button
@@ -630,15 +740,21 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
                 <div className="apple-card-inner rounded-2xl p-6 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 shadow-inner">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {months.map((monthName, monthIndex) => {
-                      const monthSummary = getMonthlyAttendanceSummary(selectedYear, monthIndex)
-                      const miniMonthDays = renderMiniMonth(selectedYear, monthIndex)
+                      const monthSummary = getMonthlyAttendanceSummary(
+                        selectedYear,
+                        monthIndex
+                      );
+                      const miniMonthDays = renderMiniMonth(
+                        selectedYear,
+                        monthIndex
+                      );
 
                       return (
                         <div
                           key={monthIndex}
                           onClick={() => {
-                            setSelectedMonth(monthIndex)
-                            setCalendarView("monthly")
+                            setSelectedMonth(monthIndex);
+                            setCalendarView("monthly");
                           }}
                           className="apple-card-inner rounded-2xl p-4 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-600 cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl group"
                         >
@@ -654,10 +770,10 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
                                     monthSummary.attendanceRate >= 90
                                       ? "bg-green-500"
                                       : monthSummary.attendanceRate >= 75
-                                        ? "bg-yellow-500"
-                                        : monthSummary.attendanceRate >= 50
-                                          ? "bg-orange-500"
-                                          : "bg-red-500"
+                                      ? "bg-yellow-500"
+                                      : monthSummary.attendanceRate >= 50
+                                      ? "bg-orange-500"
+                                      : "bg-red-500"
                                   }`}
                                 ></div>
                                 <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
@@ -670,14 +786,16 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
                           {/* Mini Calendar Grid */}
                           <div className="grid grid-cols-7 gap-1 mb-3">
                             {/* Day Headers */}
-                            {["S", "M", "T", "W", "T", "F", "S"].map((day, i) => (
-                              <div
-                                key={i}
-                                className="text-center text-xs font-medium text-gray-500 dark:text-gray-500 py-1"
-                              >
-                                {day}
-                              </div>
-                            ))}
+                            {["S", "M", "T", "W", "T", "F", "S"].map(
+                              (day, i) => (
+                                <div
+                                  key={i}
+                                  className="text-center text-xs font-medium text-gray-500 dark:text-gray-500 py-1"
+                                >
+                                  {day}
+                                </div>
+                              )
+                            )}
 
                             {/* Calendar Days */}
                             {miniMonthDays.slice(0, 35).map((day, dayIndex) => (
@@ -689,10 +807,13 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
                                     !day.isCurrentMonth
                                       ? "text-gray-300 dark:text-gray-600"
                                       : day.record
-                                        ? getStatusColor(day.record)
-                                            .replace("border-", "border-transparent ")
-                                            .replace("shadow-", "")
-                                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                      ? getStatusColor(day.record)
+                                          .replace(
+                                            "border-",
+                                            "border-transparent "
+                                          )
+                                          .replace("shadow-", "")
+                                      : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
                                   }
                                   ${day.record ? "text-white font-medium" : ""}
                                 `}
@@ -706,44 +827,68 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
                           {monthSummary.hasData ? (
                             <div className="text-center">
                               <p className="text-xs text-gray-600 dark:text-gray-400">
-                                {monthSummary.presentDays}/{monthSummary.totalRecords} days
+                                {monthSummary.presentDays}/
+                                {monthSummary.totalRecords} days
                               </p>
                             </div>
                           ) : (
                             <div className="text-center">
-                              <p className="text-xs text-gray-400 dark:text-gray-500">No records</p>
+                              <p className="text-xs text-gray-400 dark:text-gray-500">
+                                No records
+                              </p>
                             </div>
                           )}
                         </div>
-                      )
+                      );
                     })}
                   </div>
 
                   {/* Yearly Summary */}
                   <div className="mt-8 grid grid-cols-2 md:grid-cols-5 gap-4">
                     <div className="apple-card-inner rounded-xl p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-800/30 text-center apple-hover">
-                      <p className="text-2xl font-bold text-green-600 dark:text-green-400 mb-1">{yearStats.present}</p>
-                      <p className="text-sm font-medium text-green-700 dark:text-green-500">Present</p>
+                      <p className="text-2xl font-bold text-green-600 dark:text-green-400 mb-1">
+                        {yearStats.present}
+                      </p>
+                      <p className="text-sm font-medium text-green-700 dark:text-green-500">
+                        Present
+                      </p>
                     </div>
                     <div className="apple-card-inner rounded-xl p-4 bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 border border-red-200 dark:border-red-800/30 text-center apple-hover">
-                      <p className="text-2xl font-bold text-red-600 dark:text-red-400 mb-1">{yearStats.absent}</p>
-                      <p className="text-sm font-medium text-red-700 dark:text-red-500">Absent</p>
+                      <p className="text-2xl font-bold text-red-600 dark:text-red-400 mb-1">
+                        {yearStats.absent}
+                      </p>
+                      <p className="text-sm font-medium text-red-700 dark:text-red-500">
+                        Absent
+                      </p>
                     </div>
                     <div className="apple-card-inner rounded-xl p-4 bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border border-yellow-200 dark:border-yellow-800/30 text-center apple-hover">
                       <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400 mb-1">
                         {yearStats.halfDay}
                       </p>
-                      <p className="text-sm font-medium text-yellow-700 dark:text-yellow-500">Half Day</p>
+                      <p className="text-sm font-medium text-yellow-700 dark:text-yellow-500">
+                        Half Day
+                      </p>
                     </div>
                     <div className="apple-card-inner rounded-xl p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800/30 text-center apple-hover">
-                      <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-1">{yearStats.lateCome}</p>
-                      <p className="text-sm font-medium text-blue-700 dark:text-blue-500">Late Come</p>
+                      <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-1">
+                        {yearStats.lateCome}
+                      </p>
+                      <p className="text-sm font-medium text-blue-700 dark:text-blue-500">
+                        Late Come
+                      </p>
                     </div>
                     <div className="apple-card-inner rounded-xl p-4 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border border-indigo-200 dark:border-indigo-800/30 text-center apple-hover">
                       <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400 mb-1">
-                        {yearStats.total > 0 ? Math.round((yearStats.present / yearStats.total) * 100) : 0}%
+                        {yearStats.total > 0
+                          ? Math.round(
+                              (yearStats.present / yearStats.total) * 100
+                            )
+                          : 0}
+                        %
                       </p>
-                      <p className="text-sm font-medium text-indigo-700 dark:text-indigo-500">Overall</p>
+                      <p className="text-sm font-medium text-indigo-700 dark:text-indigo-500">
+                        Overall
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -769,9 +914,21 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
                         key={index}
                         className={`
                           relative aspect-square flex items-center justify-center rounded-2xl border-2 transition-all duration-300 hover:scale-105 cursor-pointer group
-                          ${day ? getStatusColor(day.record) : "bg-transparent border-transparent"}
-                          ${day?.isToday ? "ring-4 ring-indigo-300 dark:ring-indigo-600 ring-opacity-50" : ""}
-                          ${day?.isWeekend && !day?.record ? "bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700" : ""}
+                          ${
+                            day
+                              ? getStatusColor(day.record)
+                              : "bg-transparent border-transparent"
+                          }
+                          ${
+                            day?.isToday
+                              ? "ring-4 ring-indigo-300 dark:ring-indigo-600 ring-opacity-50"
+                              : ""
+                          }
+                          ${
+                            day?.isWeekend && !day?.record
+                              ? "bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                              : ""
+                          }
                           ${day ? "shadow-lg hover:shadow-xl" : ""}
                         `}
                         title={
@@ -781,7 +938,13 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
                                 year: "numeric",
                                 month: "long",
                                 day: "numeric",
-                              })}: ${day.record?.status ? day.record.status.replace("-", " ").toUpperCase() : "No record"}`
+                              })}: ${
+                                day.record?.status
+                                  ? day.record.status
+                                      .replace("-", " ")
+                                      .toUpperCase()
+                                  : "No record"
+                              }`
                             : ""
                         }
                       >
@@ -791,7 +954,11 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
                             <span
                               className={`
                               text-lg font-bold z-10 relative
-                              ${day.record ? "text-white drop-shadow-sm" : "text-gray-700 dark:text-gray-300"}
+                              ${
+                                day.record
+                                  ? "text-white drop-shadow-sm"
+                                  : "text-gray-700 dark:text-gray-300"
+                              }
                               ${day.isToday ? "text-2xl" : ""}
                             `}
                             >
@@ -800,7 +967,9 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
 
                             {/* Status Icon */}
                             {day.record && (
-                              <div className="absolute top-1 right-1 z-10">{getStatusIcon(day.record)}</div>
+                              <div className="absolute top-1 right-1 z-10">
+                                {getStatusIcon(day.record)}
+                              </div>
                             )}
 
                             {/* Today Indicator */}
@@ -819,24 +988,38 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
                   {/* Monthly Summary */}
                   <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="apple-card-inner rounded-xl p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-800/30 text-center apple-hover">
-                      <p className="text-2xl font-bold text-green-600 dark:text-green-400 mb-1">{monthStats.present}</p>
-                      <p className="text-sm font-medium text-green-700 dark:text-green-500">Present</p>
+                      <p className="text-2xl font-bold text-green-600 dark:text-green-400 mb-1">
+                        {monthStats.present}
+                      </p>
+                      <p className="text-sm font-medium text-green-700 dark:text-green-500">
+                        Present
+                      </p>
                     </div>
                     <div className="apple-card-inner rounded-xl p-4 bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 border border-red-200 dark:border-red-800/30 text-center apple-hover">
-                      <p className="text-2xl font-bold text-red-600 dark:text-red-400 mb-1">{monthStats.absent}</p>
-                      <p className="text-sm font-medium text-red-700 dark:text-red-500">Absent</p>
+                      <p className="text-2xl font-bold text-red-600 dark:text-red-400 mb-1">
+                        {monthStats.absent}
+                      </p>
+                      <p className="text-sm font-medium text-red-700 dark:text-red-500">
+                        Absent
+                      </p>
                     </div>
                     <div className="apple-card-inner rounded-xl p-4 bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border border-yellow-200 dark:border-yellow-800/30 text-center apple-hover">
                       <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400 mb-1">
-                        {monthStats.halfDay + monthStats.earlyLeave + monthStats.lateCome}
+                        {monthStats.halfDay +
+                          monthStats.earlyLeave +
+                          monthStats.lateCome}
                       </p>
-                      <p className="text-sm font-medium text-yellow-700 dark:text-yellow-500">Partial</p>
+                      <p className="text-sm font-medium text-yellow-700 dark:text-yellow-500">
+                        Partial
+                      </p>
                     </div>
                     <div className="apple-card-inner rounded-xl p-4 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border border-indigo-200 dark:border-indigo-800/30 text-center apple-hover">
                       <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400 mb-1">
                         {attendancePercentage}%
                       </p>
-                      <p className="text-sm font-medium text-indigo-700 dark:text-indigo-500">Attendance</p>
+                      <p className="text-sm font-medium text-indigo-700 dark:text-indigo-500">
+                        Attendance
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -844,7 +1027,16 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
             </CardContent>
           </Card>
         </div>
+        <DialogFooter className="bg-gray-50/80 dark:bg-gray-800/80 -mx-6 -mb-6 px-8 py-6 rounded-b-lg backdrop-blur-sm">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            className="apple-button-outline px-8 py-3 border-2 border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 rounded-xl font-semibold transition-all duration-300 hover:scale-105 bg-transparent"
+          >
+            Close
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

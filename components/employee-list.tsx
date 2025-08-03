@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import type { Employee } from "@/types/employee"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import type { Employee } from "@/types/employee";
 import {
   Search,
   Edit,
   Trash2,
-  DollarSign,
+  IndianRupee,
   Calendar,
   User,
   Package,
@@ -18,94 +18,107 @@ import {
   Crown,
   AlertCircle,
   Send,
-} from "lucide-react"
-import { AdvanceDialog } from "./advance-dialog"
-import { calculateNetSalary, formatCurrency } from "@/utils/salary-calculator"
-import { EmployeeProfile } from "./employee-profile"
-import { WorkRecordDialog } from "./work-record-dialog"
-import { useSubscription } from "@/hooks/useSubscription"
+} from "lucide-react";
+import { AdvanceDialog } from "./advance-dialog";
+import { calculateNetSalary, formatCurrency } from "@/utils/salary-calculator";
+import { EmployeeProfile } from "./employee-profile";
+import { WorkRecordDialog } from "./work-record-dialog";
+import { useSubscription } from "@/hooks/useSubscription";
 
 interface EmployeeListProps {
-  employees: Employee[]
-  onEdit: (employee: Employee) => void
-  onDelete: (id: string) => void
-  onUpdateEmployee: (id: string, updates: Partial<Employee>) => void
-  onDirectPayment?: (employee: Employee) => void
+  employees: Employee[];
+  onEdit: (employee: Employee) => void;
+  onDelete: (id: string) => void;
+  onUpdateEmployee: (id: string, updates: Partial<Employee>) => void;
+  onDirectPayment?: (employee: Employee) => void;
 }
 
-export function EmployeeList({ employees, onEdit, onDelete, onUpdateEmployee, onDirectPayment }: EmployeeListProps) {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null)
-  const [selectedProfile, setSelectedProfile] = useState<Employee | null>(null)
-  const [selectedWorkEmployee, setSelectedWorkEmployee] = useState<Employee | null>(null)
-  const { canUseWorkRecords, canAddAdvance, isPro } = useSubscription()
+export function EmployeeList({
+  employees,
+  onEdit,
+  onDelete,
+  onUpdateEmployee,
+  onDirectPayment,
+}: EmployeeListProps) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(
+    null
+  );
+  const [selectedProfile, setSelectedProfile] = useState<Employee | null>(null);
+  const [selectedWorkEmployee, setSelectedWorkEmployee] =
+    useState<Employee | null>(null);
+  const { canUseWorkRecords, canAddAdvance, isPro } = useSubscription();
 
   const filteredEmployees = employees.filter(
     (employee) =>
       employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       employee.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       employee.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      employee.position.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+      employee.position.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const getSalaryDisplay = (employee: Employee) => {
-    const { salaryType, salaryConfig } = employee
+    const { salaryType, salaryConfig } = employee;
     switch (salaryType) {
       case "hourly":
-        return `₹${salaryConfig.hourly?.rate}/hr (${salaryConfig.hourly?.hoursPerWeek}h/week)`
+        return `₹${salaryConfig.hourly?.rate}/hr (${salaryConfig.hourly?.hoursPerWeek}h/week)`;
       case "daily":
-        return `₹${salaryConfig.daily?.rate}/day (${salaryConfig.daily?.workingDays} days/month)`
+        return `₹${salaryConfig.daily?.rate}/day (${salaryConfig.daily?.workingDays} days/month)`;
       case "monthly":
-        return `₹${salaryConfig.monthly?.amount?.toLocaleString("en-IN")}/month`
+        return `₹${salaryConfig.monthly?.amount?.toLocaleString(
+          "en-IN"
+        )}/month`;
       case "piece-rate":
-        return `₹${salaryConfig.pieceRate?.ratePerPiece}/piece (target: ${salaryConfig.pieceRate?.targetPieces})`
+        return `₹${salaryConfig.pieceRate?.ratePerPiece}/piece (target: ${salaryConfig.pieceRate?.targetPieces})`;
       case "weight-based":
-        return `₹${salaryConfig.weightBased?.ratePerKg}/kg (target: ${salaryConfig.weightBased?.targetWeight}kg)`
+        return `₹${salaryConfig.weightBased?.ratePerKg}/kg (target: ${salaryConfig.weightBased?.targetWeight}kg)`;
       case "meter-based":
-        return `₹${salaryConfig.meterBased?.ratePerMeter}/m (target: ${salaryConfig.meterBased?.targetMeters}m)`
+        return `₹${salaryConfig.meterBased?.ratePerMeter}/m (target: ${salaryConfig.meterBased?.targetMeters}m)`;
       case "dynamic-date":
         const startDate = salaryConfig.dynamicDate?.startDate
           ? new Date(salaryConfig.dynamicDate.startDate).toLocaleDateString()
-          : "Not set"
+          : "Not set";
         const endDate = salaryConfig.dynamicDate?.endDate
           ? new Date(salaryConfig.dynamicDate.endDate).toLocaleDateString()
-          : "Not set"
-        return `₹${salaryConfig.dynamicDate?.baseAmount} + ${salaryConfig.dynamicDate?.bonusRate}% bonus (${startDate} - ${endDate})`
+          : "Not set";
+        return `₹${salaryConfig.dynamicDate?.baseAmount} + ${salaryConfig.dynamicDate?.bonusRate}% bonus (${startDate} - ${endDate})`;
       default:
-        return "Not configured"
+        return "Not configured";
     }
-  }
+  };
 
   const getTotalAdvances = (employee: Employee) => {
     return employee.advances
       .filter((advance) => advance.status !== "deducted")
-      .reduce((total, advance) => total + advance.amount, 0)
-  }
+      .reduce((total, advance) => total + advance.amount, 0);
+  };
 
   const getInitials = (name: string) => {
     return name
       .split(" ")
       .map((n) => n[0])
       .join("")
-      .toUpperCase()
-  }
+      .toUpperCase();
+  };
 
   const handleAdvanceClick = (employee: Employee) => {
-    const currentAdvances = employee.advances.filter((a) => a.status !== "deducted").length
+    const currentAdvances = employee.advances.filter(
+      (a) => a.status !== "deducted"
+    ).length;
     if (!canAddAdvance(currentAdvances)) {
       // Show upgrade prompt
-      return
+      return;
     }
-    setSelectedEmployee(employee)
-  }
+    setSelectedEmployee(employee);
+  };
 
   const handleWorkClick = (employee: Employee) => {
     if (!canUseWorkRecords()) {
       // Show upgrade prompt
-      return
+      return;
     }
-    setSelectedWorkEmployee(employee)
-  }
+    setSelectedWorkEmployee(employee);
+  };
 
   return (
     <div className="space-y-8">
@@ -157,7 +170,7 @@ export function EmployeeList({ employees, onEdit, onDelete, onUpdateEmployee, on
                   </p>
 
                   {/* Contact Info */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                  {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                     <div className="flex items-center space-x-2 text-gray-500 dark:text-gray-500">
                       <Mail className="w-4 h-4" />
                       <span>{employee.email}</span>
@@ -168,9 +181,12 @@ export function EmployeeList({ employees, onEdit, onDelete, onUpdateEmployee, on
                     </div>
                     <div className="flex items-center space-x-2 text-gray-500 dark:text-gray-500">
                       <Calendar className="w-4 h-4" />
-                      <span>Joined {new Date(employee.hireDate).toLocaleDateString()}</span>
+                      <span>
+                        Joined{" "}
+                        {new Date(employee.hireDate).toLocaleDateString()}
+                      </span>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               </div>
 
@@ -185,20 +201,23 @@ export function EmployeeList({ employees, onEdit, onDelete, onUpdateEmployee, on
                   Profile
                 </Button>
 
-                {employee.salaryType === "daily" && employee.salaryConfig.daily?.hasPerUnitWork && (
-                  <Button
-                    size="sm"
-                    onClick={() => handleWorkClick(employee)}
-                    disabled={!canUseWorkRecords()}
-                    className="apple-button bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-xl px-4 py-2 font-medium shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 disabled:hover:scale-100"
-                  >
-                    <Package className="w-4 h-4 mr-2" />
-                    Work
-                    {!canUseWorkRecords() && <AlertCircle className="w-3 h-3 ml-1" />}
-                  </Button>
-                )}
+                {employee.salaryType === "daily" &&
+                  employee.salaryConfig.daily?.hasPerUnitWork && (
+                    <Button
+                      size="sm"
+                      onClick={() => handleWorkClick(employee)}
+                      disabled={!canUseWorkRecords()}
+                      className="apple-button bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-xl px-4 py-2 font-medium shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 disabled:hover:scale-100"
+                    >
+                      <Package className="w-4 h-4 mr-2" />
+                      Work
+                      {!canUseWorkRecords() && (
+                        <AlertCircle className="w-3 h-3 ml-1" />
+                      )}
+                    </Button>
+                  )}
 
-                {isPro && onDirectPayment && (
+                {/* {isPro && onDirectPayment && (
                   <Button
                     size="sm"
                     onClick={() => onDirectPayment(employee)}
@@ -207,14 +226,14 @@ export function EmployeeList({ employees, onEdit, onDelete, onUpdateEmployee, on
                     <Send className="w-4 h-4 mr-2" />
                     Pay
                   </Button>
-                )}
+                )} */}
 
                 <Button
                   size="sm"
                   onClick={() => handleAdvanceClick(employee)}
                   className="apple-button bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl px-4 py-2 font-medium shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                 >
-                  <DollarSign className="w-4 h-4 mr-2" />
+                  <IndianRupee className="w-4 h-4 mr-2" />
                   Advance
                 </Button>
 
@@ -245,7 +264,9 @@ export function EmployeeList({ employees, onEdit, onDelete, onUpdateEmployee, on
                     <span className="text-white font-bold text-lg">₹</span>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Salary Configuration</p>
+                    <p className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                      Salary Configuration
+                    </p>
                     <p className="text-xs text-blue-600 dark:text-blue-400 capitalize">
                       {employee.salaryType.replace("-", " ")}
                     </p>
@@ -260,11 +281,15 @@ export function EmployeeList({ employees, onEdit, onDelete, onUpdateEmployee, on
               <div className="apple-card-inner rounded-2xl p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200/50 dark:border-green-800/30 apple-hover">
                 <div className="flex items-center space-x-3 mb-3">
                   <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
-                    <DollarSign className="w-5 h-5 text-white" />
+                    <IndianRupee className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-green-700 dark:text-green-300">Net Salary</p>
-                    <p className="text-xs text-green-600 dark:text-green-400">After deductions</p>
+                    <p className="text-sm font-medium text-green-700 dark:text-green-300">
+                      Net Salary
+                    </p>
+                    <p className="text-xs text-green-600 dark:text-green-400">
+                      After deductions
+                    </p>
                   </div>
                 </div>
                 <p className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-400 dark:to-emerald-400 bg-clip-text text-transparent">
@@ -279,7 +304,7 @@ export function EmployeeList({ employees, onEdit, onDelete, onUpdateEmployee, on
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
                     <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center">
-                      <DollarSign className="w-6 h-6 text-white" />
+                      <IndianRupee className="w-6 h-6 text-white" />
                     </div>
                     <div>
                       <p className="text-sm font-medium text-yellow-800 dark:text-yellow-300 mb-1">
@@ -292,9 +317,15 @@ export function EmployeeList({ employees, onEdit, onDelete, onUpdateEmployee, on
                   </div>
                   <div className="text-right">
                     <p className="text-xs text-yellow-700 dark:text-yellow-400">
-                      {employee.advances.filter((a) => a.status !== "deducted").length} pending
+                      {
+                        employee.advances.filter((a) => a.status !== "deducted")
+                          .length
+                      }{" "}
+                      pending
                     </p>
-                    <p className="text-xs text-yellow-600 dark:text-yellow-500">Will be deducted from salary</p>
+                    <p className="text-xs text-yellow-600 dark:text-yellow-500">
+                      Will be deducted from salary
+                    </p>
                   </div>
                 </div>
               </div>
@@ -309,7 +340,9 @@ export function EmployeeList({ employees, onEdit, onDelete, onUpdateEmployee, on
           <div className="w-32 h-32 bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 rounded-3xl flex items-center justify-center mx-auto mb-8">
             <Users className="w-16 h-16 text-gray-500 dark:text-gray-400" />
           </div>
-          <h3 className="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-4">No employees found</h3>
+          <h3 className="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-4">
+            No employees found
+          </h3>
           <p className="text-gray-500 dark:text-gray-500 text-lg">
             Try adjusting your search criteria or add a new employee.
           </p>
@@ -322,24 +355,29 @@ export function EmployeeList({ employees, onEdit, onDelete, onUpdateEmployee, on
           employee={selectedEmployee}
           onClose={() => setSelectedEmployee(null)}
           onUpdate={(updates) => {
-            onUpdateEmployee(selectedEmployee.id, updates)
-            setSelectedEmployee(null)
+            onUpdateEmployee(selectedEmployee.id, updates);
+            setSelectedEmployee(null);
           }}
         />
       )}
 
-      {selectedProfile && <EmployeeProfile employee={selectedProfile} onClose={() => setSelectedProfile(null)} />}
+      {selectedProfile && (
+        <EmployeeProfile
+          employee={selectedProfile}
+          onClose={() => setSelectedProfile(null)}
+        />
+      )}
 
       {selectedWorkEmployee && (
         <WorkRecordDialog
           employee={selectedWorkEmployee}
           onClose={() => setSelectedWorkEmployee(null)}
           onUpdate={(updates) => {
-            onUpdateEmployee(selectedWorkEmployee.id, updates)
-            setSelectedWorkEmployee(null)
+            onUpdateEmployee(selectedWorkEmployee.id, updates);
+            setSelectedWorkEmployee(null);
           }}
         />
       )}
     </div>
-  )
+  );
 }
