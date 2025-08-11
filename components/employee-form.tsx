@@ -23,7 +23,7 @@ import {
   Mail,
   Phone,
   Calendar,
-  DollarSign,
+  IndianRupee,
   Banknote,
 } from "lucide-react";
 
@@ -306,7 +306,7 @@ export function EmployeeForm({
             <div className="apple-card-inner rounded-3xl p-8 bg-white dark:bg-gray-800 shadow-lg apple-hover">
               <div className="flex items-center space-x-3 mb-6">
                 <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center">
-                  <DollarSign className="w-6 h-6 text-white" />
+                  <IndianRupee className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">

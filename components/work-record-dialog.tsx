@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { CardDescription } from "@/components/ui/card"
+import { CardDescription } from "@/components/ui/card";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -11,34 +11,55 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import type { Employee, WorkRecord } from "@/types/employee"
-import { Calendar, Package, Ruler, Hash, Trash2, FileText, DollarSign, TrendingUp } from "lucide-react"
-import { formatCurrency } from "@/utils/salary-calculator"
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { Employee, WorkRecord } from "@/types/employee";
+import {
+  Calendar,
+  Package,
+  Ruler,
+  Hash,
+  Trash2,
+  FileText,
+  IndianRupee,
+  TrendingUp,
+} from "lucide-react";
+import { formatCurrency } from "@/utils/salary-calculator";
 
 interface WorkRecordDialogProps {
-  employee: Employee
-  onClose: () => void
-  onUpdate: (updates: Partial<Employee>) => void
+  employee: Employee;
+  onClose: () => void;
+  onUpdate: (updates: Partial<Employee>) => void;
 }
 
-export function WorkRecordDialog({ employee, onClose, onUpdate }: WorkRecordDialogProps) {
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0])
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
-  const [unit, setUnit] = useState<"kg" | "meter" | "piece">("kg")
-  const [quantity, setQuantity] = useState("")
-  const [notes, setNotes] = useState("")
+export function WorkRecordDialog({
+  employee,
+  onClose,
+  onUpdate,
+}: WorkRecordDialogProps) {
+  const [selectedDate, setSelectedDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [unit, setUnit] = useState<"kg" | "meter" | "piece">("kg");
+  const [quantity, setQuantity] = useState("");
+  const [notes, setNotes] = useState("");
 
   const handleAddWorkRecord = () => {
-    if (!quantity || Number.parseFloat(quantity) <= 0) return
+    if (!quantity || Number.parseFloat(quantity) <= 0) return;
 
-    const rate = employee.salaryConfig.daily?.perUnitRates?.[unit] || 0
-    const totalAmount = Number.parseFloat(quantity) * rate
+    const rate = employee.salaryConfig.daily?.perUnitRates?.[unit] || 0;
+    const totalAmount = Number.parseFloat(quantity) * rate;
 
     const newRecord: WorkRecord = {
       id: crypto.randomUUID(),
@@ -50,78 +71,87 @@ export function WorkRecordDialog({ employee, onClose, onUpdate }: WorkRecordDial
       totalAmount,
       notes,
       createdAt: new Date().toISOString(),
-    }
+    };
 
-    const updatedRecords = [...(employee.workRecords || []), newRecord]
-    onUpdate({ workRecords: updatedRecords })
+    const updatedRecords = [...(employee.workRecords || []), newRecord];
+    onUpdate({ workRecords: updatedRecords });
 
     // Reset form
-    setQuantity("")
-    setNotes("")
-  }
+    setQuantity("");
+    setNotes("");
+  };
 
   const handleDeleteRecord = (recordId: string) => {
-    const updatedRecords = (employee.workRecords || []).filter((record) => record.id !== recordId)
-    onUpdate({ workRecords: updatedRecords })
-  }
+    const updatedRecords = (employee.workRecords || []).filter(
+      (record) => record.id !== recordId
+    );
+    onUpdate({ workRecords: updatedRecords });
+  };
 
   const getCurrentMonthRecords = () => {
-    const currentMonth = new Date().getMonth()
-    const currentYear = new Date().getFullYear()
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
 
     return (employee.workRecords || [])
       .filter((record) => {
-        const recordDate = new Date(record.date)
-        return recordDate.getMonth() === currentMonth && recordDate.getFullYear() === currentYear
+        const recordDate = new Date(record.date);
+        return (
+          recordDate.getMonth() === currentMonth &&
+          recordDate.getFullYear() === currentYear
+        );
       })
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-  }
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  };
 
   const getSelectedMonthRecords = () => {
     return (employee.workRecords || [])
       .filter((record) => {
-        const recordDate = new Date(record.date)
-        return recordDate.getMonth() === selectedMonth && recordDate.getFullYear() === selectedYear
+        const recordDate = new Date(record.date);
+        return (
+          recordDate.getMonth() === selectedMonth &&
+          recordDate.getFullYear() === selectedYear
+        );
       })
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-  }
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  };
 
   const getMonthlyTotal = (records: WorkRecord[]) => {
-    return records.reduce((total, record) => total + record.totalAmount, 0)
-  }
+    return records.reduce((total, record) => total + record.totalAmount, 0);
+  };
 
   const getUnitIcon = (unit: string) => {
     switch (unit) {
       case "kg":
-        return <Package className="w-4 h-4" />
+        return <Package className="w-4 h-4" />;
       case "meter":
-        return <Ruler className="w-4 h-4" />
+        return <Ruler className="w-4 h-4" />;
       case "piece":
-        return <Hash className="w-4 h-4" />
+        return <Hash className="w-4 h-4" />;
       default:
-        return <Package className="w-4 h-4" />
+        return <Package className="w-4 h-4" />;
     }
-  }
+  };
 
   const getUnitColor = (unit: string) => {
     switch (unit) {
       case "kg":
-        return "bg-gradient-to-r from-purple-500 to-pink-500 dark:from-purple-400 dark:to-pink-400"
+        return "bg-gradient-to-r from-purple-500 to-pink-500 dark:from-purple-400 dark:to-pink-400";
       case "meter":
-        return "bg-gradient-to-r from-blue-500 to-cyan-500 dark:from-blue-400 dark:to-cyan-400"
+        return "bg-gradient-to-r from-blue-500 to-cyan-500 dark:from-blue-400 dark:to-cyan-400";
       case "piece":
-        return "bg-gradient-to-r from-green-500 to-emerald-500 dark:from-green-400 dark:to-emerald-400"
+        return "bg-gradient-to-r from-green-500 to-emerald-500 dark:from-green-400 dark:to-emerald-400";
       default:
-        return "bg-gradient-to-r from-gray-500 to-slate-500 dark:from-gray-400 dark:to-slate-400"
+        return "bg-gradient-to-r from-gray-500 to-slate-500 dark:from-gray-400 dark:to-slate-400";
     }
-  }
+  };
 
-  const currentMonthRecords = getCurrentMonthRecords()
-  const selectedMonthRecords = getSelectedMonthRecords()
+  const currentMonthRecords = getCurrentMonthRecords();
+  const selectedMonthRecords = getSelectedMonthRecords();
   const displayRecords =
-    selectedMonth === new Date().getMonth() && selectedYear === new Date().getFullYear()
+    selectedMonth === new Date().getMonth() &&
+    selectedYear === new Date().getFullYear()
       ? currentMonthRecords
-      : selectedMonthRecords
+      : selectedMonthRecords;
 
   const months = [
     "January",
@@ -136,7 +166,7 @@ export function WorkRecordDialog({ employee, onClose, onUpdate }: WorkRecordDial
     "October",
     "November",
     "December",
-  ]
+  ];
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
@@ -162,7 +192,10 @@ export function WorkRecordDialog({ employee, onClose, onUpdate }: WorkRecordDial
             <CardContent className="p-6">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="date" className="text-gray-700 dark:text-gray-300 font-medium">
+                  <Label
+                    htmlFor="date"
+                    className="text-gray-700 dark:text-gray-300 font-medium"
+                  >
                     Date
                   </Label>
                   <Input
@@ -174,10 +207,18 @@ export function WorkRecordDialog({ employee, onClose, onUpdate }: WorkRecordDial
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="unit" className="text-gray-700 dark:text-gray-300 font-medium">
+                  <Label
+                    htmlFor="unit"
+                    className="text-gray-700 dark:text-gray-300 font-medium"
+                  >
                     Unit Type
                   </Label>
-                  <Select value={unit} onValueChange={(value: "kg" | "meter" | "piece") => setUnit(value)}>
+                  <Select
+                    value={unit}
+                    onValueChange={(value: "kg" | "meter" | "piece") =>
+                      setUnit(value)
+                    }
+                  >
                     <SelectTrigger className="border-2 border-gray-200 dark:border-gray-700 focus:border-indigo-500 dark:focus:border-indigo-400 bg-white/50 dark:bg-slate-800/50">
                       <SelectValue />
                     </SelectTrigger>
@@ -189,7 +230,10 @@ export function WorkRecordDialog({ employee, onClose, onUpdate }: WorkRecordDial
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="quantity" className="text-gray-700 dark:text-gray-300 font-medium">
+                  <Label
+                    htmlFor="quantity"
+                    className="text-gray-700 dark:text-gray-300 font-medium"
+                  >
                     Quantity
                   </Label>
                   <Input
@@ -203,21 +247,30 @@ export function WorkRecordDialog({ employee, onClose, onUpdate }: WorkRecordDial
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-gray-700 dark:text-gray-300 font-medium">Rate & Total</Label>
+                  <Label className="text-gray-700 dark:text-gray-300 font-medium">
+                    Rate & Total
+                  </Label>
                   <div className="p-3 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border border-green-200 dark:border-green-800/30">
                     <div className="text-sm font-medium text-green-700 dark:text-green-300">
-                      Rate: ₹{employee.salaryConfig.daily?.perUnitRates?.[unit] || 0}/{unit}
+                      Rate: ₹
+                      {employee.salaryConfig.daily?.perUnitRates?.[unit] || 0}/
+                      {unit}
                     </div>
                     <div className="text-lg font-bold text-green-800 dark:text-green-200">
                       {formatCurrency(
-                        (Number.parseFloat(quantity) || 0) * (employee.salaryConfig.daily?.perUnitRates?.[unit] || 0),
+                        (Number.parseFloat(quantity) || 0) *
+                          (employee.salaryConfig.daily?.perUnitRates?.[unit] ||
+                            0)
                       )}
                     </div>
                   </div>
                 </div>
               </div>
               <div className="mt-4 space-y-2">
-                <Label htmlFor="notes" className="text-gray-700 dark:text-gray-300 font-medium">
+                <Label
+                  htmlFor="notes"
+                  className="text-gray-700 dark:text-gray-300 font-medium"
+                >
                   Notes (Optional)
                 </Label>
                 <Input
@@ -260,7 +313,9 @@ export function WorkRecordDialog({ employee, onClose, onUpdate }: WorkRecordDial
                 <div className="flex items-center space-x-2">
                   <Select
                     value={selectedMonth.toString()}
-                    onValueChange={(value) => setSelectedMonth(Number.parseInt(value))}
+                    onValueChange={(value) =>
+                      setSelectedMonth(Number.parseInt(value))
+                    }
                   >
                     <SelectTrigger className="w-32 bg-white/20 dark:bg-black/20 border-white/30 dark:border-white/20 text-white">
                       <SelectValue />
@@ -275,7 +330,9 @@ export function WorkRecordDialog({ employee, onClose, onUpdate }: WorkRecordDial
                   </Select>
                   <Select
                     value={selectedYear.toString()}
-                    onValueChange={(value) => setSelectedYear(Number.parseInt(value))}
+                    onValueChange={(value) =>
+                      setSelectedYear(Number.parseInt(value))
+                    }
                   >
                     <SelectTrigger className="w-24 bg-white/20 dark:bg-black/20 border-white/30 dark:border-white/20 text-white">
                       <SelectValue />
@@ -297,8 +354,12 @@ export function WorkRecordDialog({ employee, onClose, onUpdate }: WorkRecordDial
                 <div className="bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-400 dark:to-blue-500 p-4 rounded-xl text-white shadow-lg apple-hover">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-3xl font-bold">{displayRecords.length}</p>
-                      <p className="text-blue-100 dark:text-blue-200 text-sm font-medium">Work Days</p>
+                      <p className="text-3xl font-bold">
+                        {displayRecords.length}
+                      </p>
+                      <p className="text-blue-100 dark:text-blue-200 text-sm font-medium">
+                        Work Days
+                      </p>
                     </div>
                     <Calendar className="w-8 h-8 text-blue-200 dark:text-blue-300" />
                   </div>
@@ -308,9 +369,13 @@ export function WorkRecordDialog({ employee, onClose, onUpdate }: WorkRecordDial
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-3xl font-bold">
-                        {displayRecords.reduce((sum, record) => sum + record.quantity, 0).toFixed(1)}
+                        {displayRecords
+                          .reduce((sum, record) => sum + record.quantity, 0)
+                          .toFixed(1)}
                       </p>
-                      <p className="text-green-100 dark:text-green-200 text-sm font-medium">Total Units</p>
+                      <p className="text-green-100 dark:text-green-200 text-sm font-medium">
+                        Total Units
+                      </p>
                     </div>
                     <Package className="w-8 h-8 text-green-200 dark:text-green-300" />
                   </div>
@@ -319,10 +384,14 @@ export function WorkRecordDialog({ employee, onClose, onUpdate }: WorkRecordDial
                 <div className="bg-gradient-to-br from-purple-500 to-purple-600 dark:from-purple-400 dark:to-purple-500 p-4 rounded-xl text-white shadow-lg apple-hover">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-2xl font-bold">{formatCurrency(getMonthlyTotal(displayRecords))}</p>
-                      <p className="text-purple-100 dark:text-purple-200 text-sm font-medium">Total Earnings</p>
+                      <p className="text-2xl font-bold">
+                        {formatCurrency(getMonthlyTotal(displayRecords))}
+                      </p>
+                      <p className="text-purple-100 dark:text-purple-200 text-sm font-medium">
+                        Total Earnings
+                      </p>
                     </div>
-                    <DollarSign className="w-8 h-8 text-purple-200 dark:text-purple-300" />
+                    <IndianRupee className="w-8 h-8 text-purple-200 dark:text-purple-300" />
                   </div>
                 </div>
 
@@ -332,10 +401,15 @@ export function WorkRecordDialog({ employee, onClose, onUpdate }: WorkRecordDial
                       <p className="text-2xl font-bold">
                         ₹
                         {displayRecords.length > 0
-                          ? (getMonthlyTotal(displayRecords) / displayRecords.length).toFixed(0)
+                          ? (
+                              getMonthlyTotal(displayRecords) /
+                              displayRecords.length
+                            ).toFixed(0)
                           : "0"}
                       </p>
-                      <p className="text-orange-100 dark:text-orange-200 text-sm font-medium">Avg/Day</p>
+                      <p className="text-orange-100 dark:text-orange-200 text-sm font-medium">
+                        Avg/Day
+                      </p>
                     </div>
                     <TrendingUp className="w-8 h-8 text-orange-200 dark:text-orange-300" />
                   </div>
@@ -346,8 +420,12 @@ export function WorkRecordDialog({ employee, onClose, onUpdate }: WorkRecordDial
               {displayRecords.length === 0 ? (
                 <div className="text-center py-12">
                   <Package className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-                  <p className="text-gray-500 dark:text-gray-400 text-lg font-medium">No work records found</p>
-                  <p className="text-gray-400 dark:text-gray-500">Add your first work record to get started</p>
+                  <p className="text-gray-500 dark:text-gray-400 text-lg font-medium">
+                    No work records found
+                  </p>
+                  <p className="text-gray-400 dark:text-gray-500">
+                    Add your first work record to get started
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-3 max-h-96 overflow-y-auto">
@@ -358,7 +436,9 @@ export function WorkRecordDialog({ employee, onClose, onUpdate }: WorkRecordDial
                     >
                       <div className="flex items-center space-x-4">
                         <div
-                          className={`w-12 h-12 rounded-full ${getUnitColor(record.unit)} flex items-center justify-center text-white shadow-lg`}
+                          className={`w-12 h-12 rounded-full ${getUnitColor(
+                            record.unit
+                          )} flex items-center justify-center text-white shadow-lg`}
                         >
                           {getUnitIcon(record.unit)}
                         </div>
@@ -367,9 +447,15 @@ export function WorkRecordDialog({ employee, onClose, onUpdate }: WorkRecordDial
                             <span className="font-bold text-lg text-gray-800 dark:text-gray-200">
                               {record.quantity} {record.unit}
                             </span>
-                            <span className="text-gray-400 dark:text-gray-500">×</span>
-                            <span className="text-gray-600 dark:text-gray-400 font-medium">₹{record.rate}</span>
-                            <span className="text-gray-400 dark:text-gray-500">=</span>
+                            <span className="text-gray-400 dark:text-gray-500">
+                              ×
+                            </span>
+                            <span className="text-gray-600 dark:text-gray-400 font-medium">
+                              ₹{record.rate}
+                            </span>
+                            <span className="text-gray-400 dark:text-gray-500">
+                              =
+                            </span>
                             <span className="font-bold text-xl text-green-600 dark:text-green-400">
                               {formatCurrency(record.totalAmount)}
                             </span>
@@ -377,11 +463,14 @@ export function WorkRecordDialog({ employee, onClose, onUpdate }: WorkRecordDial
                           <div className="flex items-center text-sm text-gray-500 dark:text-gray-500 space-x-4">
                             <span className="flex items-center">
                               <Calendar className="w-3 h-3 mr-1" />
-                              {new Date(record.date).toLocaleDateString("en-IN", {
-                                weekday: "short",
-                                day: "numeric",
-                                month: "short",
-                              })}
+                              {new Date(record.date).toLocaleDateString(
+                                "en-IN",
+                                {
+                                  weekday: "short",
+                                  day: "numeric",
+                                  month: "short",
+                                }
+                              )}
                             </span>
                             {record.notes && (
                               <span className="flex items-center">
@@ -419,5 +508,5 @@ export function WorkRecordDialog({ employee, onClose, onUpdate }: WorkRecordDial
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

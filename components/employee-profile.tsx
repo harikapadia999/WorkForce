@@ -786,7 +786,7 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
                           {/* Mini Calendar Grid */}
                           <div className="grid grid-cols-7 gap-1 mb-3">
                             {/* Day Headers */}
-                            {["S", "M", "T", "W", "T", "F", "S"].map(
+                            {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map(
                               (day, i) => (
                                 <div
                                   key={i}

@@ -1,73 +1,96 @@
-"use client"
+"use client";
 
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import type { SalaryType, SalaryConfig } from "@/types/employee"
-import { useState } from "react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Clock, Calendar, DollarSign, Package, Ruler, Hash, TrendingUp, Settings } from "lucide-react"
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { SalaryType, SalaryConfig } from "@/types/employee";
+import { useState } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Clock,
+  Calendar,
+  IndianRupee,
+  Package,
+  Ruler,
+  Hash,
+  TrendingUp,
+  Settings,
+} from "lucide-react";
 
 interface SalaryConfigFormProps {
-  salaryType: SalaryType
-  config: SalaryConfig
-  onChange: (config: SalaryConfig) => void
+  salaryType: SalaryType;
+  config: SalaryConfig;
+  onChange: (config: SalaryConfig) => void;
 }
 
-export function SalaryConfigForm({ salaryType, config, onChange }: SalaryConfigFormProps) {
-  const [paymentDates, setPaymentDates] = useState<string[]>(config.dynamicDate?.paymentDates || [""])
+export function SalaryConfigForm({
+  salaryType,
+  config,
+  onChange,
+}: SalaryConfigFormProps) {
+  const [paymentDates, setPaymentDates] = useState<string[]>(
+    config.dynamicDate?.paymentDates || [""]
+  );
 
   const updateConfig = (updates: Partial<SalaryConfig>) => {
-    onChange({ ...config, ...updates })
-  }
+    onChange({ ...config, ...updates });
+  };
 
   const getIcon = () => {
     switch (salaryType) {
       case "hourly":
-        return <Clock className="w-6 h-6 text-white" />
+        return <Clock className="w-6 h-6 text-white" />;
       case "daily":
-        return <Calendar className="w-6 h-6 text-white" />
+        return <Calendar className="w-6 h-6 text-white" />;
       case "monthly":
-        return <DollarSign className="w-6 h-6 text-white" />
+        return <IndianRupee className="w-6 h-6 text-white" />;
       case "piece-rate":
-        return <Hash className="w-6 h-6 text-white" />
+        return <Hash className="w-6 h-6 text-white" />;
       case "weight-based":
-        return <Package className="w-6 h-6 text-white" />
+        return <Package className="w-6 h-6 text-white" />;
       case "meter-based":
-        return <Ruler className="w-6 h-6 text-white" />
+        return <Ruler className="w-6 h-6 text-white" />;
       case "dynamic-date":
-        return <TrendingUp className="w-6 h-6 text-white" />
+        return <TrendingUp className="w-6 h-6 text-white" />;
       default:
-        return <Settings className="w-6 h-6 text-white" />
+        return <Settings className="w-6 h-6 text-white" />;
     }
-  }
+  };
 
   const getTitle = () => {
     switch (salaryType) {
       case "hourly":
-        return "Hourly Rate Configuration"
+        return "Hourly Rate Configuration";
       case "daily":
-        return "Daily Rate Configuration"
+        return "Daily Rate Configuration";
       case "monthly":
-        return "Monthly Salary Configuration"
+        return "Monthly Salary Configuration";
       case "piece-rate":
-        return "Piece Rate Configuration"
+        return "Piece Rate Configuration";
       case "weight-based":
-        return "Weight-Based Configuration"
+        return "Weight-Based Configuration";
       case "meter-based":
-        return "Meter-Based Configuration"
+        return "Meter-Based Configuration";
       case "dynamic-date":
-        return "Dynamic Date Configuration"
+        return "Dynamic Date Configuration";
       default:
-        return "Salary Configuration"
+        return "Salary Configuration";
     }
-  }
+  };
 
   return (
     <Card className="apple-card-inner rounded-2xl border-0 shadow-lg overflow-hidden apple-hover">
       <CardHeader className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-6">
         <CardTitle className="flex items-center space-x-3 text-xl">
-          <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">{getIcon()}</div>
+          <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+            {getIcon()}
+          </div>
           <span>{getTitle()}</span>
         </CardTitle>
       </CardHeader>
@@ -75,7 +98,9 @@ export function SalaryConfigForm({ salaryType, config, onChange }: SalaryConfigF
         {salaryType === "hourly" && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-3">
-              <Label className="text-gray-700 dark:text-gray-300 font-semibold">Hourly Rate (₹)</Label>
+              <Label className="text-gray-700 dark:text-gray-300 font-semibold">
+                Hourly Rate (₹)
+              </Label>
               <Input
                 type="number"
                 step="0.01"
@@ -93,7 +118,9 @@ export function SalaryConfigForm({ salaryType, config, onChange }: SalaryConfigF
               />
             </div>
             <div className="space-y-3">
-              <Label className="text-gray-700 dark:text-gray-300 font-semibold">Hours per Week</Label>
+              <Label className="text-gray-700 dark:text-gray-300 font-semibold">
+                Hours per Week
+              </Label>
               <Input
                 type="number"
                 value={config.hourly?.hoursPerWeek || ""}
@@ -116,7 +143,9 @@ export function SalaryConfigForm({ salaryType, config, onChange }: SalaryConfigF
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-3">
-                <Label className="text-gray-700 dark:text-gray-300 font-semibold">Daily Rate (₹)</Label>
+                <Label className="text-gray-700 dark:text-gray-300 font-semibold">
+                  Daily Rate (₹)
+                </Label>
                 <Input
                   type="number"
                   step="0.01"
@@ -136,7 +165,9 @@ export function SalaryConfigForm({ salaryType, config, onChange }: SalaryConfigF
                 />
               </div>
               <div className="space-y-3">
-                <Label className="text-gray-700 dark:text-gray-300 font-semibold">Working Days per Month</Label>
+                <Label className="text-gray-700 dark:text-gray-300 font-semibold">
+                  Working Days per Month
+                </Label>
                 <Input
                   type="number"
                   value={config.daily?.workingDays || ""}
@@ -174,7 +205,10 @@ export function SalaryConfigForm({ salaryType, config, onChange }: SalaryConfigF
                   }
                   className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
                 />
-                <Label htmlFor="hasPerUnitWork" className="text-blue-800 dark:text-blue-300 font-semibold">
+                <Label
+                  htmlFor="hasPerUnitWork"
+                  className="text-blue-800 dark:text-blue-300 font-semibold"
+                >
                   Enable per-unit work tracking (KG/Meter/Piece)
                 </Label>
               </div>
@@ -267,7 +301,9 @@ export function SalaryConfigForm({ salaryType, config, onChange }: SalaryConfigF
 
         {salaryType === "monthly" && (
           <div className="space-y-3">
-            <Label className="text-gray-700 dark:text-gray-300 font-semibold">Monthly Salary (₹)</Label>
+            <Label className="text-gray-700 dark:text-gray-300 font-semibold">
+              Monthly Salary (₹)
+            </Label>
             <Input
               type="number"
               step="0.01"
@@ -286,7 +322,9 @@ export function SalaryConfigForm({ salaryType, config, onChange }: SalaryConfigF
         {salaryType === "piece-rate" && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-3">
-              <Label className="text-gray-700 dark:text-gray-300 font-semibold">Rate per Piece (₹)</Label>
+              <Label className="text-gray-700 dark:text-gray-300 font-semibold">
+                Rate per Piece (₹)
+              </Label>
               <Input
                 type="number"
                 step="0.01"
@@ -304,7 +342,9 @@ export function SalaryConfigForm({ salaryType, config, onChange }: SalaryConfigF
               />
             </div>
             <div className="space-y-3">
-              <Label className="text-gray-700 dark:text-gray-300 font-semibold">Target Pieces per Month</Label>
+              <Label className="text-gray-700 dark:text-gray-300 font-semibold">
+                Target Pieces per Month
+              </Label>
               <Input
                 type="number"
                 value={config.pieceRate?.targetPieces || ""}
@@ -326,7 +366,9 @@ export function SalaryConfigForm({ salaryType, config, onChange }: SalaryConfigF
         {salaryType === "weight-based" && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-3">
-              <Label className="text-gray-700 dark:text-gray-300 font-semibold">Rate per KG (₹)</Label>
+              <Label className="text-gray-700 dark:text-gray-300 font-semibold">
+                Rate per KG (₹)
+              </Label>
               <Input
                 type="number"
                 step="0.01"
@@ -344,7 +386,9 @@ export function SalaryConfigForm({ salaryType, config, onChange }: SalaryConfigF
               />
             </div>
             <div className="space-y-3">
-              <Label className="text-gray-700 dark:text-gray-300 font-semibold">Target Weight per Month (KG)</Label>
+              <Label className="text-gray-700 dark:text-gray-300 font-semibold">
+                Target Weight per Month (KG)
+              </Label>
               <Input
                 type="number"
                 value={config.weightBased?.targetWeight || ""}
@@ -366,7 +410,9 @@ export function SalaryConfigForm({ salaryType, config, onChange }: SalaryConfigF
         {salaryType === "meter-based" && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-3">
-              <Label className="text-gray-700 dark:text-gray-300 font-semibold">Rate per Meter (₹)</Label>
+              <Label className="text-gray-700 dark:text-gray-300 font-semibold">
+                Rate per Meter (₹)
+              </Label>
               <Input
                 type="number"
                 step="0.01"
@@ -384,7 +430,9 @@ export function SalaryConfigForm({ salaryType, config, onChange }: SalaryConfigF
               />
             </div>
             <div className="space-y-3">
-              <Label className="text-gray-700 dark:text-gray-300 font-semibold">Target Meters per Month</Label>
+              <Label className="text-gray-700 dark:text-gray-300 font-semibold">
+                Target Meters per Month
+              </Label>
               <Input
                 type="number"
                 value={config.meterBased?.targetMeters || ""}
@@ -407,7 +455,9 @@ export function SalaryConfigForm({ salaryType, config, onChange }: SalaryConfigF
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-3">
-                <Label className="text-gray-700 dark:text-gray-300 font-semibold">Base Amount (₹)</Label>
+                <Label className="text-gray-700 dark:text-gray-300 font-semibold">
+                  Base Amount (₹)
+                </Label>
                 <Input
                   type="number"
                   step="0.01"
@@ -419,7 +469,8 @@ export function SalaryConfigForm({ salaryType, config, onChange }: SalaryConfigF
                         bonusRate: config.dynamicDate?.bonusRate || 0,
                         startDate: config.dynamicDate?.startDate || "",
                         endDate: config.dynamicDate?.endDate || "",
-                        paymentFrequency: config.dynamicDate?.paymentFrequency || "monthly",
+                        paymentFrequency:
+                          config.dynamicDate?.paymentFrequency || "monthly",
                       },
                     })
                   }
@@ -428,7 +479,9 @@ export function SalaryConfigForm({ salaryType, config, onChange }: SalaryConfigF
                 />
               </div>
               <div className="space-y-3">
-                <Label className="text-gray-700 dark:text-gray-300 font-semibold">Bonus Rate (%)</Label>
+                <Label className="text-gray-700 dark:text-gray-300 font-semibold">
+                  Bonus Rate (%)
+                </Label>
                 <Input
                   type="number"
                   step="0.01"
@@ -440,7 +493,8 @@ export function SalaryConfigForm({ salaryType, config, onChange }: SalaryConfigF
                         bonusRate: Number.parseFloat(e.target.value) || 0,
                         startDate: config.dynamicDate?.startDate || "",
                         endDate: config.dynamicDate?.endDate || "",
-                        paymentFrequency: config.dynamicDate?.paymentFrequency || "monthly",
+                        paymentFrequency:
+                          config.dynamicDate?.paymentFrequency || "monthly",
                       },
                     })
                   }
@@ -451,7 +505,9 @@ export function SalaryConfigForm({ salaryType, config, onChange }: SalaryConfigF
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-3">
-                <Label className="text-gray-700 dark:text-gray-300 font-semibold">Start Date</Label>
+                <Label className="text-gray-700 dark:text-gray-300 font-semibold">
+                  Start Date
+                </Label>
                 <Input
                   type="date"
                   value={config.dynamicDate?.startDate || ""}
@@ -462,7 +518,8 @@ export function SalaryConfigForm({ salaryType, config, onChange }: SalaryConfigF
                         bonusRate: config.dynamicDate?.bonusRate || 0,
                         startDate: e.target.value,
                         endDate: config.dynamicDate?.endDate || "",
-                        paymentFrequency: config.dynamicDate?.paymentFrequency || "monthly",
+                        paymentFrequency:
+                          config.dynamicDate?.paymentFrequency || "monthly",
                       },
                     })
                   }
@@ -470,7 +527,9 @@ export function SalaryConfigForm({ salaryType, config, onChange }: SalaryConfigF
                 />
               </div>
               <div className="space-y-3">
-                <Label className="text-gray-700 dark:text-gray-300 font-semibold">End Date</Label>
+                <Label className="text-gray-700 dark:text-gray-300 font-semibold">
+                  End Date
+                </Label>
                 <Input
                   type="date"
                   value={config.dynamicDate?.endDate || ""}
@@ -481,7 +540,8 @@ export function SalaryConfigForm({ salaryType, config, onChange }: SalaryConfigF
                         bonusRate: config.dynamicDate?.bonusRate || 0,
                         startDate: config.dynamicDate?.startDate || "",
                         endDate: e.target.value,
-                        paymentFrequency: config.dynamicDate?.paymentFrequency || "monthly",
+                        paymentFrequency:
+                          config.dynamicDate?.paymentFrequency || "monthly",
                       },
                     })
                   }
@@ -490,7 +550,9 @@ export function SalaryConfigForm({ salaryType, config, onChange }: SalaryConfigF
               </div>
             </div>
             <div className="space-y-3">
-              <Label className="text-gray-700 dark:text-gray-300 font-semibold">Payment Frequency</Label>
+              <Label className="text-gray-700 dark:text-gray-300 font-semibold">
+                Payment Frequency
+              </Label>
               <Select
                 value={config.dynamicDate?.paymentFrequency || "monthly"}
                 onValueChange={(value: "weekly" | "bi-weekly" | "monthly") =>
@@ -525,5 +587,5 @@ export function SalaryConfigForm({ salaryType, config, onChange }: SalaryConfigF
         )}
       </CardContent>
     </Card>
-  )
+  );
 }
