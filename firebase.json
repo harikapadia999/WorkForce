@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "site": "tmp11",
+    "site": "WorkForce",
     "public": "out",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [

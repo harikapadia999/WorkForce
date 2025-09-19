@@ -1,5 +1,9 @@
 "use client";
 
+import type React from "react";
+
+import { useMemo } from "react";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,8 +25,19 @@ import {
   Hash,
   TrendingUp,
   Settings,
+  Info,
+  Plus,
+  Trash2,
 } from "lucide-react";
+import { config } from "process";
 
+type UnitType = "kg" | "meter" | "piece";
+interface PerUnitItem {
+  id: string;
+  name: string;
+  unit: UnitType;
+  rate: number;
+}
 interface SalaryConfigFormProps {
   salaryType: SalaryType;
   config: SalaryConfig;
@@ -62,7 +77,29 @@ export function SalaryConfigForm({
         return <Settings className="w-6 h-6 text-white" />;
     }
   };
+  const daily = useMemo(() => (config?.daily as any) || {}, [config]);
+  const hasPerUnitWork: boolean = !!daily?.hasPerUnitWork;
+  const perUnitCatalog: PerUnitItem[] = daily?.perUnitCatalog || [];
+  const perUnitRates: Partial<Record<UnitType, number>> =
+    daily?.perUnitRates || {};
 
+  const setDaily = (partial: Record<string, unknown>) => {
+    onChange({
+      ...(config || {}),
+      daily: {
+        ...daily,
+        ...partial,
+      },
+    } as SalaryConfig);
+  };
+
+  // Helper tips
+  const Tip = ({ children }: { children: React.ReactNode }) => (
+    <div className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-400 mt-1">
+      <Info className="w-3.5 h-3.5 mt-0.5" />
+      <p>{children}</p>
+    </div>
+  );
   const getTitle = () => {
     switch (salaryType) {
       case "hourly":
@@ -86,7 +123,7 @@ export function SalaryConfigForm({
 
   return (
     <Card className="apple-card-inner rounded-2xl border-0 shadow-lg overflow-hidden apple-hover">
-      <CardHeader className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-6">
+      <CardHeader className="bg-gradient-to-r from-blue-600 via-indigo-600: to-purple-600 text-white p-6">
         <CardTitle className="flex items-center space-x-3 text-xl">
           <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
             {getIcon()}
@@ -141,7 +178,222 @@ export function SalaryConfigForm({
 
         {salaryType === "daily" && (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {salaryType === "piece-rate" && (
+              <Tip>
+                Multiple items with different prices? Use Daily Salary with
+                Per‑Unit Item Catalog to name items and set individual rates.
+              </Tip>
+            )}
+            {salaryType === "weight-based" && (
+              <Tip>
+                Weight-based teams can also use Daily Salary with Item Catalog
+                (unit = kg) for item-wise pricing.
+              </Tip>
+            )}
+            {salaryType === "meter-based" && (
+              <Tip>
+                Meter-based roles can use Daily Salary with Item Catalog (unit =
+                meter) for varied item rates.
+              </Tip>
+            )}
+
+            {/* Daily type editor (with per-unit item catalog) */}
+            {salaryType === "daily" && (
+              <div>
+                {/* <CardHeader className="bg-gradient-to-r from-sky-500 to-indigo-600 dark:from-sky-400 dark:to-indigo-500 text-white rounded-t-xl">
+                  <CardTitle className="text-lg">
+                    Daily Rate Configuration
+                  </CardTitle>
+                </CardHeader> */}
+                <div className="p-6 space-y-5">
+                  {/* Fallback single-unit rates */}
+                  <div>
+                    <Label className="text-sm font-semibold">
+                      Fallback Unit Rates
+                    </Label>
+                    <Tip>
+                      These are used if the employee does not select a specific
+                      item from the catalog.
+                    </Tip>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3 md:grid-cols-[1.2fr,0.8fr,0.8fr,auto] items-end p-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/60 dark:bg-slate-800/60">
+                      {(["kg", "meter", "piece"] as UnitType[]).map((u) => (
+                        <div key={u} className="space-y-1.5">
+                          <Label className="text-xs text-gray-600 dark:text-gray-400">
+                            Rate (₹/{u})
+                          </Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={(perUnitRates[u] ?? "") as number | string}
+                            onChange={(e) =>
+                              setDaily({
+                                perUnitRates: {
+                                  ...perUnitRates,
+                                  [u]:
+                                    e.target.value === ""
+                                      ? undefined
+                                      : Number.parseFloat(e.target.value),
+                                },
+                              })
+                            }
+                            placeholder="0.00"
+                            className="apple-input rounded-xl border-2"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Toggle catalog */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold">
+                      Per‑Unit Item Catalog
+                    </Label>
+                    <Tip>
+                      Enable item-wise tracking. Each item has its own unit and
+                      price. When recording work, selecting an item will
+                      auto-fill the unit and rate.
+                    </Tip>
+                    <div className="mt-2">
+                      <label className="inline-flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          className="w-4 h-4"
+                          checked={hasPerUnitWork}
+                          onChange={(e) =>
+                            setDaily({ hasPerUnitWork: e.target.checked })
+                          }
+                        />
+                        <span className="text-sm">
+                          Enable item-wise per‑unit catalog
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Catalog editor */}
+                  {hasPerUnitWork && (
+                    <div className="space-y-3">
+                      {(perUnitCatalog || []).length === 0 && (
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                          No items yet. Add your first item below.
+                        </div>
+                      )}
+
+                      <div className="grid grid-cols-1 gap-3">
+                        {(perUnitCatalog || []).map((it, idx) => (
+                          <div
+                            key={it.id}
+                            className="grid grid-cols-1 md:grid-cols-[1.2fr,0.8fr,0.8fr,auto] gap-3 items-end p-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/60 dark:bg-slate-800/60"
+                          >
+                            <div className="space-y-1.5">
+                              <Label className="text-xs text-gray-600 dark:text-gray-400">
+                                Item name
+                              </Label>
+                              <Input
+                                value={it.name}
+                                onChange={(e) => {
+                                  const next = [...perUnitCatalog];
+                                  next[idx] = { ...it, name: e.target.value };
+                                  setDaily({ perUnitCatalog: next });
+                                }}
+                                placeholder="e.g., Cotton roll, Silk fabric, Widget A"
+                                className="apple-input rounded-xl border-2"
+                              />
+                            </div>
+
+                            <div className="space-y-1.5">
+                              <Label className="text-xs text-gray-600 dark:text-gray-400">
+                                Unit
+                              </Label>
+                              <Select
+                                value={it.unit}
+                                onValueChange={(v: UnitType) => {
+                                  const next = [...perUnitCatalog];
+                                  next[idx] = { ...it, unit: v };
+                                  setDaily({ perUnitCatalog: next });
+                                }}
+                              >
+                                <SelectTrigger className="apple-input rounded-xl border-2">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent className="apple-card rounded-xl">
+                                  <SelectItem value="kg">
+                                    Kilogram (kg)
+                                  </SelectItem>
+                                  <SelectItem value="meter">Meter</SelectItem>
+                                  <SelectItem value="piece">Piece</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <div className="space-y-1.5">
+                              <Label className="text-xs text-gray-600 dark:text-gray-400">
+                                Rate (₹/{it.unit})
+                              </Label>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                value={it.rate}
+                                onChange={(e) => {
+                                  const next = [...perUnitCatalog];
+                                  next[idx] = {
+                                    ...it,
+                                    rate:
+                                      Number.parseFloat(e.target.value) || 0,
+                                  };
+                                  setDaily({ perUnitCatalog: next });
+                                }}
+                                placeholder="0.00"
+                                className="apple-input rounded-xl border-2"
+                              />
+                            </div>
+
+                            <div className="flex justify-end">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={() => {
+                                  const next = perUnitCatalog.filter(
+                                    (x) => x.id !== it.id
+                                  );
+                                  setDaily({ perUnitCatalog: next });
+                                }}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="pt-2">
+                        <Button
+                          type="button"
+                          onClick={() => {
+                            const item: PerUnitItem = {
+                              id: crypto.randomUUID(),
+                              name: "",
+                              unit: "piece",
+                              rate: 0,
+                            };
+                            setDaily({
+                              perUnitCatalog: [...(perUnitCatalog || []), item],
+                            });
+                          }}
+                          className="flex-1 apple-button bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 hover:from-blue-600 hover:via-indigo-600 hover:to-purple-600 text-white transition-all duration-300 hover:scale-105 shadow-2xl hover:shadow-blue-500/25"
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add Item
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-3">
                 <Label className="text-gray-700 dark:text-gray-300 font-semibold">
                   Daily Rate (₹)
@@ -185,9 +437,9 @@ export function SalaryConfigForm({
                   placeholder="22"
                 />
               </div>
-            </div>
+            </div> */}
 
-            <div className="apple-card-inner rounded-xl p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/30 apple-hover">
+            {/* <div className="apple-card-inner rounded-xl p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/30 apple-hover">
               <div className="flex items-center space-x-3">
                 <input
                   type="checkbox"
@@ -295,7 +547,7 @@ export function SalaryConfigForm({
                   </div>
                 </div>
               </div>
-            )}
+            )} */}
           </div>
         )}
 
@@ -480,6 +732,40 @@ export function SalaryConfigForm({
               </div>
               <div className="space-y-3">
                 <Label className="text-gray-700 dark:text-gray-300 font-semibold">
+                  Payment Frequency
+                </Label>
+                <Select
+                  value={config.dynamicDate?.paymentFrequency || "monthly"}
+                  onValueChange={(value: "weekly" | "bi-weekly" | "monthly") =>
+                    updateConfig({
+                      dynamicDate: {
+                        baseAmount: config.dynamicDate?.baseAmount || 0,
+                        bonusRate: config.dynamicDate?.bonusRate || 0,
+                        startDate: config.dynamicDate?.startDate || "",
+                        endDate: config.dynamicDate?.endDate || "",
+                        paymentFrequency: value,
+                      },
+                    })
+                  }
+                >
+                  <SelectTrigger className="apple-input rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-indigo-500 dark:focus:border-indigo-400 bg-white dark:bg-gray-800 px-4 py-3 text-lg">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="apple-card rounded-xl border-0 shadow-2xl">
+                    <SelectItem value="weekly" className="py-3 px-4">
+                      📅 Weekly
+                    </SelectItem>
+                    <SelectItem value="bi-weekly" className="py-3 px-4">
+                      📅 Bi-weekly
+                    </SelectItem>
+                    <SelectItem value="monthly" className="py-3 px-4">
+                      📅 Monthly
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {/* <div className="space-y-3">
+                <Label className="text-gray-700 dark:text-gray-300 font-semibold">
                   Bonus Rate (%)
                 </Label>
                 <Input
@@ -501,7 +787,7 @@ export function SalaryConfigForm({
                   className="apple-input rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-indigo-500 dark:focus:border-indigo-400 bg-white dark:bg-gray-800 px-4 py-3 text-lg"
                   placeholder="0.00"
                 />
-              </div>
+              </div> */}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-3">
@@ -549,7 +835,7 @@ export function SalaryConfigForm({
                 />
               </div>
             </div>
-            <div className="space-y-3">
+            {/* <div className="space-y-3">
               <Label className="text-gray-700 dark:text-gray-300 font-semibold">
                 Payment Frequency
               </Label>
@@ -582,7 +868,7 @@ export function SalaryConfigForm({
                   </SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </div> */}
           </div>
         )}
       </CardContent>

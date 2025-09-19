@@ -25,6 +25,7 @@ import {
   Calendar,
   IndianRupee,
   Banknote,
+  Info,
 } from "lucide-react";
 
 interface EmployeeFormProps {
@@ -100,6 +101,13 @@ export function EmployeeForm({
       },
     }));
   };
+
+  const Tip = ({ children }: { children: React.ReactNode }) => (
+    <div className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-400 mt-1">
+      <Info className="w-3.5 h-3.5 mt-0.5" />
+      <p>{children}</p>
+    </div>
+  );
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -230,53 +238,6 @@ export function EmployeeForm({
                     placeholder="Enter phone number"
                   />
                 </div>
-
-                <div className="space-y-3">
-                  <Label
-                    htmlFor="position"
-                    className="text-gray-700 dark:text-gray-300 font-semibold flex items-center"
-                  >
-                    <Building className="w-4 h-4 mr-2" />
-                    Position
-                  </Label>
-                  <Input
-                    id="position"
-                    value={formData.position}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        position: e.target.value,
-                      }))
-                    }
-                    required
-                    className="apple-input rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 bg-gray-50 dark:bg-gray-700 px-4 py-3 text-lg transition-all duration-300"
-                    placeholder="Enter job position"
-                  />
-                </div>
-
-                <div className="space-y-3">
-                  <Label
-                    htmlFor="department"
-                    className="text-gray-700 dark:text-gray-300 font-semibold flex items-center"
-                  >
-                    <Building className="w-4 h-4 mr-2" />
-                    Department
-                  </Label>
-                  <Input
-                    id="department"
-                    value={formData.department}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        department: e.target.value,
-                      }))
-                    }
-                    required
-                    className="apple-input rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 bg-gray-50 dark:bg-gray-700 px-4 py-3 text-lg transition-all duration-300"
-                    placeholder="Enter department"
-                  />
-                </div>
-
                 <div className="space-y-3">
                   <Label
                     htmlFor="hireDate"
@@ -298,6 +259,59 @@ export function EmployeeForm({
                     required
                     className="apple-input rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 bg-gray-50 dark:bg-gray-700 px-4 py-3 text-lg transition-all duration-300"
                   />
+                </div>
+                <div className="space-y-3">
+                  <Label
+                    htmlFor="position"
+                    className="text-gray-700 dark:text-gray-300 font-semibold flex items-center"
+                  >
+                    <Building className="w-4 h-4 mr-2" />
+                    Position
+                  </Label>
+                  <Input
+                    id="position"
+                    value={formData.position}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        position: e.target.value,
+                      }))
+                    }
+                    required
+                    className="apple-input rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 bg-gray-50 dark:bg-gray-700 px-4 py-3 text-lg transition-all duration-300"
+                    placeholder="e.g., Weaver, Loader, Inspector"
+                  />
+                  <Tip>
+                    Use role names that match how you pay them (e.g., “Weaver
+                    (meter based)”).
+                  </Tip>
+                </div>
+
+                <div className="space-y-3">
+                  <Label
+                    htmlFor="department"
+                    className="text-gray-700 dark:text-gray-300 font-semibold flex items-center"
+                  >
+                    <Building className="w-4 h-4 mr-2" />
+                    Department
+                  </Label>
+                  <Input
+                    id="department"
+                    value={formData.department}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        department: e.target.value,
+                      }))
+                    }
+                    required
+                    className="apple-input rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 bg-gray-50 dark:bg-gray-700 px-4 py-3 text-lg transition-all duration-300"
+                    placeholder="e.g., Production, Logistics, QC"
+                  />
+                  <Tip>
+                    Group by team or station. This helps with reports and
+                    filters (e.g., Production, QC, Logistics).
+                  </Tip>
                 </div>
               </div>
             </div>
@@ -340,12 +354,12 @@ export function EmployeeForm({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="apple-card rounded-xl border-0 shadow-2xl">
-                      <SelectItem
+                      {/* <SelectItem
                         value="hourly"
                         className="py-3 px-4 text-base"
                       >
                         ⏰ Hourly Rate
-                      </SelectItem>
+                      </SelectItem> */}
                       <SelectItem value="daily" className="py-3 px-4 text-base">
                         📅 Daily Rate
                       </SelectItem>
@@ -355,7 +369,7 @@ export function EmployeeForm({
                       >
                         📊 Monthly Salary
                       </SelectItem>
-                      <SelectItem
+                      {/* <SelectItem
                         value="piece-rate"
                         className="py-3 px-4 text-base"
                       >
@@ -372,7 +386,7 @@ export function EmployeeForm({
                         className="py-3 px-4 text-base"
                       >
                         📏 Meter Based
-                      </SelectItem>
+                      </SelectItem> */}
                       <SelectItem
                         value="dynamic-date"
                         className="py-3 px-4 text-base"
@@ -381,6 +395,15 @@ export function EmployeeForm({
                       </SelectItem>
                     </SelectContent>
                   </Select>
+                  {/* Short helper beneath the selector for the requested types */}
+                  {["piece-rate", "weight-based", "meter-based"].includes(
+                    formData.salaryType
+                  ) && (
+                    <Tip>
+                      Need different rates per item? Consider Daily Salary with
+                      Per‑Unit Item Catalog for item‑wise names and pricing.
+                    </Tip>
+                  )}
                 </div>
 
                 <SalaryConfigForm
