@@ -184,7 +184,7 @@ export function EmployeeList({
                     </p>
 
                     {/* Contact */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                    {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                       <div className="flex items-center space-x-2 text-gray-500 dark:text-gray-500">
                         <Mail className="w-4 h-4" />
                         <span>{employee.email}</span>
@@ -200,7 +200,7 @@ export function EmployeeList({
                           {new Date(employee.hireDate).toLocaleDateString()}
                         </span>
                       </div>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
 

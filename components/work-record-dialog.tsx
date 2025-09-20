@@ -245,7 +245,7 @@ export function WorkRecordDialog({
                   <div className="mb-4 apple-card-inner rounded-xl p-4 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200/70 dark:border-indigo-800/40">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="space-y-2">
-                        <Label className="text-gray-700 dark:text-gray-300 font-medium flex items-center">
+                        <Label className="text-gray-700 dark:text-gray-300 font-medium flex p-1 items-center">
                           <Tag className="w-4 h-4 mr-2" />
                           Item
                         </Label>
@@ -450,7 +450,7 @@ export function WorkRecordDialog({
 
           {/* Combined Work Records with Month Selector */}
           <Card className="border-0 shadow-lg apple-card apple-hover">
-            <CardHeader className="bg-gradient-to-r from-cyan-500 to-blue-600 dark:from-cyan-400 dark:to-blue-500 text-white rounded-t-lg">
+            <CardHeader className="bg-gradient-to-r from-cyan-400 via-blue-500 to-blue-800 dark:from-cyan-400 dark:via-blue-500 dark:to-blue-800 text-white rounded-t-lg">
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-xl flex items-center">

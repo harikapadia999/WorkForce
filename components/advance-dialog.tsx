@@ -555,22 +555,21 @@ export function AdvanceDialog({
                                       {hasError}
                                     </p>
                                   )}
-                                </div>
-
-                                <div className="flex items-end mt-1 2xl:mt-0">
-                                  <Button
-                                    variant="outline"
-                                    onClick={() =>
-                                      void handleUpdateAdvanceStatus(
-                                        advance.id,
-                                        "deducted"
-                                      )
-                                    }
-                                    className="w-full 2xl:w-auto apple-button-outline rounded-xl min-w-[12.5rem] whitespace-nowrap shrink-0"
-                                    aria-label="Mark fully deducted"
-                                  >
-                                    Mark Fully Deducted
-                                  </Button>
+                                  <div className="flex items-end mt-1  2xl:mt-0">
+                                    <Button
+                                      variant="outline"
+                                      onClick={() =>
+                                        void handleUpdateAdvanceStatus(
+                                          advance.id,
+                                          "deducted"
+                                        )
+                                      }
+                                      className="w-full 2xl:w-auto mt-4 apple-button-outline rounded-xl min-w-[12.5rem] whitespace-nowrap shrink-0"
+                                      aria-label="Mark fully deducted"
+                                    >
+                                      Mark Fully Deducted
+                                    </Button>
+                                  </div>
                                 </div>
                               </div>
                             ) : (
