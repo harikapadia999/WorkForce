@@ -32,7 +32,6 @@ import {
   Phone,
   Building,
   User,
-  X,
   ChevronLeft,
   ChevronRight,
   UserCheck,
@@ -74,17 +73,28 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
       d <= endDate;
       d.setDate(d.getDate() + 1)
     ) {
-      const dateStr = d.toISOString().split("T")[0];
+      // Create date string in YYYY-MM-DD format to match attendance records
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      const dateStr = `${year}-${month}-${day}`;
+
       const record = employee.attendanceRecords?.find(
         (r) => r.date === dateStr
       );
+
+      // Get today's date string for comparison
+      const today = new Date();
+      const todayStr = `${today.getFullYear()}-${String(
+        today.getMonth() + 1
+      ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
 
       calendar.push({
         date: new Date(d),
         dateStr,
         record,
         dayOfWeek: d.getDay(),
-        isToday: dateStr === new Date().toISOString().split("T")[0],
+        isToday: dateStr === todayStr,
         isWeekend: d.getDay() === 0 || d.getDay() === 6,
       });
     }
@@ -135,9 +145,11 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
 
   const getAttendanceStats = (year: number) => {
     const yearRecords =
-      employee.attendanceRecords?.filter(
-        (r) => new Date(r.date).getFullYear() === year
-      ) || [];
+      employee.attendanceRecords?.filter((r) => {
+        // Parse date string directly to avoid timezone issues
+        const [recordYear] = r.date.split("-").map(Number);
+        return recordYear === year;
+      }) || [];
 
     return {
       present: yearRecords.filter((r) => r.status === "present").length,
@@ -152,10 +164,9 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
   const getMonthlyStats = (year: number, month: number) => {
     const monthRecords =
       employee.attendanceRecords?.filter((r) => {
-        const recordDate = new Date(r.date);
-        return (
-          recordDate.getFullYear() === year && recordDate.getMonth() === month
-        );
+        // Parse the date string directly (YYYY-MM-DD format)
+        const [recordYear, recordMonth] = r.date.split("-").map(Number);
+        return recordYear === year && recordMonth === month + 1; // month is 0-indexed
       }) || [];
 
     return {
@@ -173,14 +184,13 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
     return Math.round((stats.present / stats.total) * 100);
   };
 
-  // Add this function to get monthly attendance summary
+  // Fixed function to get monthly attendance summary
   const getMonthlyAttendanceSummary = (year: number, month: number) => {
     const monthRecords =
       employee.attendanceRecords?.filter((r) => {
-        const recordDate = new Date(r.date);
-        return (
-          recordDate.getFullYear() === year && recordDate.getMonth() === month
-        );
+        // Parse the date string directly (YYYY-MM-DD format) to avoid timezone issues
+        const [recordYear, recordMonth] = r.date.split("-").map(Number);
+        return recordYear === year && recordMonth === month + 1; // month is 0-indexed in JS
       }) || [];
 
     const totalDays = new Date(year, month + 1, 0).getDate();
@@ -199,7 +209,7 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
     };
   };
 
-  // Add this function to render mini month calendar
+  // Fixed function to render mini month calendar
   const renderMiniMonth = (year: number, month: number) => {
     const monthStart = new Date(year, month, 1);
     const monthEnd = new Date(year, month + 1, 0);
@@ -211,7 +221,12 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
 
     // Generate 6 weeks (42 days) for consistent grid
     for (let i = 0; i < 42; i++) {
-      const dateStr = currentDate.toISOString().split("T")[0];
+      // Create date string in YYYY-MM-DD format to match attendance records exactly
+      const dateYear = currentDate.getFullYear();
+      const dateMonth = String(currentDate.getMonth() + 1).padStart(2, "0");
+      const dateDay = String(currentDate.getDate()).padStart(2, "0");
+      const dateStr = `${dateYear}-${dateMonth}-${dateDay}`;
+
       const record = employee.attendanceRecords?.find(
         (r) => r.date === dateStr
       );
@@ -303,14 +318,6 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
                   </p>
                 </div>
               </div>
-              {/* <Button
-                variant="ghost"
-                size="sm"
-                onClick={onClose}
-                className="text-white hover:bg-white/20 rounded-xl p-3 transition-all duration-300 hover:scale-105"
-              >
-                <X className="w-5 h-5" />
-              </Button> */}
             </div>
 
             {/* Quick Stats */}
@@ -893,7 +900,7 @@ export function EmployeeProfile({ employee, onClose }: EmployeeProfileProps) {
                   </div>
                 </div>
               ) : (
-                /* Monthly Calendar View - existing code */
+                /* Monthly Calendar View */
                 <div className="apple-card-inner rounded-2xl p-6 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 shadow-inner">
                   {/* Days of Week Header */}
                   <div className="grid grid-cols-7 gap-2 mb-4">

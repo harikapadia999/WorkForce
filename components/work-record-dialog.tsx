@@ -2,7 +2,7 @@
 
 import { CardDescription } from "@/components/ui/card";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -32,13 +32,24 @@ import {
   FileText,
   IndianRupee,
   TrendingUp,
+  Tag,
 } from "lucide-react";
 import { formatCurrency } from "@/utils/salary-calculator";
+import { logActivity, logView } from "@/services/activity-log-service";
+
+type UnitType = "kg" | "meter" | "piece";
 
 interface WorkRecordDialogProps {
   employee: Employee;
   onClose: () => void;
   onUpdate: (updates: Partial<Employee>) => void;
+}
+
+function parseItemFromNotes(notes?: string) {
+  if (!notes) return { itemName: null as string | null, rest: "" };
+  const m = notes.match(/^Item:\s*([^|]+?)(?:\s*\|\s*(.*))?$/);
+  if (m) return { itemName: m[1].trim(), rest: (m[2] || "").trim() };
+  return { itemName: null, rest: notes };
 }
 
 export function WorkRecordDialog({
@@ -49,58 +60,108 @@ export function WorkRecordDialog({
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
   );
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [unit, setUnit] = useState<"kg" | "meter" | "piece">("kg");
+
+  // Item catalog (daily per-unit)
+  const catalog = useMemo(
+    () => (employee.salaryConfig as any)?.daily?.perUnitCatalog || [],
+    [employee.salaryConfig]
+  );
+
+  const [selectedItemId, setSelectedItemId] = useState<string>("");
+  const [unit, setUnit] = useState<UnitType>("kg");
   const [quantity, setQuantity] = useState("");
+  const [rate, setRate] = useState<number>(0);
   const [notes, setNotes] = useState("");
 
-  const handleAddWorkRecord = () => {
-    if (!quantity || Number.parseFloat(quantity) <= 0) return;
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
-    const rate = employee.salaryConfig.daily?.perUnitRates?.[unit] || 0;
-    const totalAmount = Number.parseFloat(quantity) * rate;
+  const legacyRates = (employee.salaryConfig as any)?.daily?.perUnitRates || {};
+
+  const handleSelectItem = (id: string) => {
+    setSelectedItemId(id);
+    const item = catalog.find((i: any) => i.id === id);
+    if (item) {
+      setUnit(item.unit);
+      setRate(item.rate);
+    }
+  };
+
+  const computeRateFromFallback = (u: UnitType): number => {
+    return (legacyRates?.[u] || 0) as number;
+  };
+
+  const effectiveRate = selectedItemId
+    ? rate
+    : rate || computeRateFromFallback(unit);
+
+  const handleAddWorkRecord = async () => {
+    const q = Number.parseFloat(quantity);
+    if (!q || q <= 0) return;
+
+    const recordRate = effectiveRate;
+    const totalAmount = Number((q * recordRate).toFixed(2));
+
+    const item = catalog.find((i: any) => i.id === selectedItemId);
+    const itemNotePrefix = item ? `Item: ${item.name}` : "";
+    const combinedNotes = itemNotePrefix
+      ? notes
+        ? `${itemNotePrefix} | ${notes}`
+        : itemNotePrefix
+      : notes;
 
     const newRecord: WorkRecord = {
       id: crypto.randomUUID(),
       employeeId: employee.id,
       date: selectedDate,
-      quantity: Number.parseFloat(quantity),
+      quantity: q,
       unit,
-      rate,
+      rate: recordRate,
       totalAmount,
-      notes,
+      notes: combinedNotes,
       createdAt: new Date().toISOString(),
     };
 
-    const updatedRecords = [...(employee.workRecords || []), newRecord];
+    const before = employee.workRecords || [];
+    const updatedRecords = [...before, newRecord];
     onUpdate({ workRecords: updatedRecords });
 
-    // Reset form
+    // Log granular action (Create workRecord)
+    await logActivity({
+      action: "Create",
+      resourceType: "workRecord",
+      resourceId: newRecord.id,
+      metadata: {
+        employeeId: employee.id,
+        employeeName: (employee as any).name,
+      },
+      after: newRecord,
+    });
+
+    // Reset
+    setSelectedItemId("");
+    setUnit("kg");
     setQuantity("");
+    setRate(0);
     setNotes("");
   };
 
-  const handleDeleteRecord = (recordId: string) => {
-    const updatedRecords = (employee.workRecords || []).filter(
-      (record) => record.id !== recordId
-    );
+  const handleDeleteRecord = async (recordId: string) => {
+    const before = employee.workRecords || [];
+    const rec = before.find((r) => r.id === recordId);
+    const updatedRecords = before.filter((record) => record.id !== recordId);
     onUpdate({ workRecords: updatedRecords });
-  };
 
-  const getCurrentMonthRecords = () => {
-    const currentMonth = new Date().getMonth();
-    const currentYear = new Date().getFullYear();
-
-    return (employee.workRecords || [])
-      .filter((record) => {
-        const recordDate = new Date(record.date);
-        return (
-          recordDate.getMonth() === currentMonth &&
-          recordDate.getFullYear() === currentYear
-        );
-      })
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    await logActivity({
+      action: "Delete",
+      resourceType: "workRecord",
+      resourceId: recordId,
+      metadata: {
+        employeeId: employee.id,
+        employeeName: (employee as any).name,
+      },
+      before: rec,
+    });
   };
 
   const getSelectedMonthRecords = () => {
@@ -115,12 +176,14 @@ export function WorkRecordDialog({
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   };
 
+  const displayRecords = getSelectedMonthRecords();
+
   const getMonthlyTotal = (records: WorkRecord[]) => {
     return records.reduce((total, record) => total + record.totalAmount, 0);
   };
 
-  const getUnitIcon = (unit: string) => {
-    switch (unit) {
+  const getUnitIcon = (u: string) => {
+    switch (u) {
       case "kg":
         return <Package className="w-4 h-4" />;
       case "meter":
@@ -131,27 +194,6 @@ export function WorkRecordDialog({
         return <Package className="w-4 h-4" />;
     }
   };
-
-  const getUnitColor = (unit: string) => {
-    switch (unit) {
-      case "kg":
-        return "bg-gradient-to-r from-purple-500 to-pink-500 dark:from-purple-400 dark:to-pink-400";
-      case "meter":
-        return "bg-gradient-to-r from-blue-500 to-cyan-500 dark:from-blue-400 dark:to-cyan-400";
-      case "piece":
-        return "bg-gradient-to-r from-green-500 to-emerald-500 dark:from-green-400 dark:to-emerald-400";
-      default:
-        return "bg-gradient-to-r from-gray-500 to-slate-500 dark:from-gray-400 dark:to-slate-400";
-    }
-  };
-
-  const currentMonthRecords = getCurrentMonthRecords();
-  const selectedMonthRecords = getSelectedMonthRecords();
-  const displayRecords =
-    selectedMonth === new Date().getMonth() &&
-    selectedYear === new Date().getFullYear()
-      ? currentMonthRecords
-      : selectedMonthRecords;
 
   const months = [
     "January",
@@ -168,12 +210,19 @@ export function WorkRecordDialog({
     "December",
   ];
 
+  useEffect(() => {
+    void logView("WorkRecordDialog", {
+      employeeId: employee.id,
+      employeeName: (employee as any).name,
+    });
+  }, [employee]);
+
   return (
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto apple-card">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
-            Work Records - {employee.name}
+            Work Records - {(employee as any).name}
           </DialogTitle>
           <DialogDescription className="text-gray-600 dark:text-gray-400">
             Track daily work output and earnings with detailed analytics
@@ -190,6 +239,80 @@ export function WorkRecordDialog({
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
+              {/* Item-first when catalog available */}
+              {catalog.length > 0 &&
+                (employee.salaryConfig as any)?.daily?.hasPerUnitWork && (
+                  <div className="mb-4 apple-card-inner rounded-xl p-4 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200/70 dark:border-indigo-800/40">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-gray-700 dark:text-gray-300 font-medium flex items-center">
+                          <Tag className="w-4 h-4 mr-2" />
+                          Item
+                        </Label>
+                        <Select
+                          value={selectedItemId}
+                          onValueChange={handleSelectItem}
+                        >
+                          <SelectTrigger className="apple-input rounded-xl border-2">
+                            <SelectValue placeholder="Select item" />
+                          </SelectTrigger>
+                          <SelectContent className="apple-card rounded-xl">
+                            {catalog.map((it: any) => (
+                              <SelectItem key={it.id} value={it.id}>
+                                {it.name} • ₹{it.rate}/{it.unit}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-gray-700 dark:text-gray-300 font-medium">
+                          Unit
+                        </Label>
+                        <Select
+                          value={unit}
+                          onValueChange={(val: UnitType) => {
+                            setUnit(val);
+                            if (!selectedItemId)
+                              setRate(computeRateFromFallback(val));
+                          }}
+                        >
+                          <SelectTrigger className="apple-input rounded-xl border-2">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="apple-card rounded-xl">
+                            <SelectItem value="kg">🏋️ Kilogram (KG)</SelectItem>
+                            <SelectItem value="meter">📏 Meter</SelectItem>
+                            <SelectItem value="piece">🔢 Piece</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-gray-700 dark:text-gray-300 font-medium">
+                          Rate (₹/{unit})
+                        </Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={effectiveRate}
+                          onChange={(e) =>
+                            setRate(Number.parseFloat(e.target.value) || 0)
+                          }
+                          className="apple-input rounded-xl border-2"
+                        />
+                        <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                          {selectedItemId
+                            ? "Auto‑filled from item; you can override."
+                            : "Using fallback unit rate."}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+              {/* Basic inputs */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="space-y-2">
                   <Label
@@ -206,29 +329,53 @@ export function WorkRecordDialog({
                     className="border-2 border-gray-200 dark:border-gray-700 focus:border-indigo-500 dark:focus:border-indigo-400 transition-colors bg-white/50 dark:bg-slate-800/50"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="unit"
-                    className="text-gray-700 dark:text-gray-300 font-medium"
-                  >
-                    Unit Type
-                  </Label>
-                  <Select
-                    value={unit}
-                    onValueChange={(value: "kg" | "meter" | "piece") =>
-                      setUnit(value)
-                    }
-                  >
-                    <SelectTrigger className="border-2 border-gray-200 dark:border-gray-700 focus:border-indigo-500 dark:focus:border-indigo-400 bg-white/50 dark:bg-slate-800/50">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl">
-                      <SelectItem value="kg">🏋️ Kilogram (KG)</SelectItem>
-                      <SelectItem value="meter">📏 Meter</SelectItem>
-                      <SelectItem value="piece">🔢 Piece</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+
+                {/* If no catalog, offer legacy unit + rate path */}
+                {!(
+                  catalog.length > 0 &&
+                  (employee.salaryConfig as any)?.daily?.hasPerUnitWork
+                ) && (
+                  <>
+                    <div className="space-y-2">
+                      <Label className="text-gray-700 dark:text-gray-300 font-medium">
+                        Unit Type
+                      </Label>
+                      <Select
+                        value={unit}
+                        onValueChange={(value: UnitType) => {
+                          setUnit(value);
+                          setRate(computeRateFromFallback(value));
+                        }}
+                      >
+                        <SelectTrigger className="border-2 border-gray-200 dark:border-gray-700 focus:border-indigo-500 dark:focus:border-indigo-400 bg-white/50 dark:bg-slate-800/50">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl">
+                          <SelectItem value="kg">🏋️ Kilogram (KG)</SelectItem>
+                          <SelectItem value="meter">📏 Meter</SelectItem>
+                          <SelectItem value="piece">🔢 Piece</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-gray-700 dark:text-gray-300 font-medium">
+                        Rate (₹/{unit})
+                      </Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={rate || computeRateFromFallback(unit)}
+                        onChange={(e) =>
+                          setRate(Number.parseFloat(e.target.value) || 0)
+                        }
+                        placeholder="0.00"
+                        className="border-2 border-gray-200 dark:border-gray-700 focus:border-indigo-500 dark:focus:border-indigo-400 transition-colors bg-white/50 dark:bg-slate-800/50"
+                      />
+                    </div>
+                  </>
+                )}
+
                 <div className="space-y-2">
                   <Label
                     htmlFor="quantity"
@@ -246,26 +393,28 @@ export function WorkRecordDialog({
                     className="border-2 border-gray-200 dark:border-gray-700 focus:border-indigo-500 dark:focus:border-indigo-400 transition-colors bg-white/50 dark:bg-slate-800/50"
                   />
                 </div>
+
                 <div className="space-y-2">
-                  <Label className="text-gray-700 dark:text-gray-300 font-medium">
-                    Rate & Total
+                  <Label
+                    htmlFor="total"
+                    className="text-gray-700 dark:text-gray-300 font-medium"
+                  >
+                    Total
                   </Label>
                   <div className="p-3 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border border-green-200 dark:border-green-800/30">
                     <div className="text-sm font-medium text-green-700 dark:text-green-300">
-                      Rate: ₹
-                      {employee.salaryConfig.daily?.perUnitRates?.[unit] || 0}/
-                      {unit}
+                      Rate: ₹{(effectiveRate || 0).toFixed(2)}/{unit}
                     </div>
                     <div className="text-lg font-bold text-green-800 dark:text-green-200">
                       {formatCurrency(
                         (Number.parseFloat(quantity) || 0) *
-                          (employee.salaryConfig.daily?.perUnitRates?.[unit] ||
-                            0)
+                          (effectiveRate || 0)
                       )}
                     </div>
                   </div>
                 </div>
               </div>
+
               <div className="mt-4 space-y-2">
                 <Label
                   htmlFor="notes"
@@ -280,7 +429,12 @@ export function WorkRecordDialog({
                   placeholder="Additional notes..."
                   className="border-2 border-gray-200 dark:border-gray-700 focus:border-indigo-500 dark:focus:border-indigo-400 transition-colors bg-white/50 dark:bg-slate-800/50"
                 />
+                <p className="text-[11px] text-gray-500">
+                  If an item is selected, it will be saved as "Item: Name" at
+                  the start of notes for reporting.
+                </p>
               </div>
+
               <div className="mt-6">
                 <Button
                   onClick={handleAddWorkRecord}
@@ -303,12 +457,12 @@ export function WorkRecordDialog({
                     <Calendar className="w-5 h-5 mr-2" />
                     Work Records & Analytics
                   </CardTitle>
-                  <CardDescription className="text-cyan-100 dark:text-cyan-200 mt-1">
+                  <DialogDescription className="text-cyan-100 dark:text-cyan-200 mt-1">
                     {months[selectedMonth]} {selectedYear}
                     {selectedMonth === new Date().getMonth() &&
                       selectedYear === new Date().getFullYear() &&
                       " (Current Month)"}
-                  </CardDescription>
+                  </DialogDescription>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Select
@@ -321,9 +475,9 @@ export function WorkRecordDialog({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl">
-                      {months.map((month, index) => (
-                        <SelectItem key={index} value={index.toString()}>
-                          {month}
+                      {Array.from({ length: 12 }).map((_, i) => (
+                        <SelectItem key={i} value={i.toString()}>
+                          {months[i]}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -338,7 +492,11 @@ export function WorkRecordDialog({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl">
-                      {[2024, 2023, 2022].map((year) => (
+                      {[
+                        new Date().getFullYear(),
+                        new Date().getFullYear() - 1,
+                        new Date().getFullYear() - 2,
+                      ].map((year) => (
                         <SelectItem key={year} value={year.toString()}>
                           {year}
                         </SelectItem>
@@ -429,68 +587,78 @@ export function WorkRecordDialog({
                 </div>
               ) : (
                 <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {displayRecords.map((record, index) => (
-                    <div
-                      key={record.id}
-                      className="group flex items-center justify-between p-4 bg-white/50 dark:bg-slate-800/50 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 hover:border-gray-300 dark:hover:border-gray-600 backdrop-blur-sm apple-hover"
-                    >
-                      <div className="flex items-center space-x-4">
-                        <div
-                          className={`w-12 h-12 rounded-full ${getUnitColor(
-                            record.unit
-                          )} flex items-center justify-center text-white shadow-lg`}
-                        >
-                          {getUnitIcon(record.unit)}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-3 mb-1">
-                            <span className="font-bold text-lg text-gray-800 dark:text-gray-200">
-                              {record.quantity} {record.unit}
-                            </span>
-                            <span className="text-gray-400 dark:text-gray-500">
-                              ×
-                            </span>
-                            <span className="text-gray-600 dark:text-gray-400 font-medium">
-                              ₹{record.rate}
-                            </span>
-                            <span className="text-gray-400 dark:text-gray-500">
-                              =
-                            </span>
-                            <span className="font-bold text-xl text-green-600 dark:text-green-400">
-                              {formatCurrency(record.totalAmount)}
-                            </span>
-                          </div>
-                          <div className="flex items-center text-sm text-gray-500 dark:text-gray-500 space-x-4">
-                            <span className="flex items-center">
-                              <Calendar className="w-3 h-3 mr-1" />
-                              {new Date(record.date).toLocaleDateString(
-                                "en-IN",
-                                {
-                                  weekday: "short",
-                                  day: "numeric",
-                                  month: "short",
-                                }
-                              )}
-                            </span>
-                            {record.notes && (
-                              <span className="flex items-center">
-                                <FileText className="w-3 h-3 mr-1" />
-                                {record.notes}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleDeleteRecord(record.id)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+                  {displayRecords.map((record) => {
+                    const { itemName, rest } = parseItemFromNotes(record.notes);
+                    return (
+                      <div
+                        key={record.id}
+                        className="group flex items-center justify-between p-4 bg-white/50 dark:bg-slate-800/50 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 hover:border-gray-300 dark:hover:border-gray-600 backdrop-blur-sm apple-hover"
                       >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
+                        <div className="flex items-center gap-4">
+                          <div
+                            className="w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg"
+                            style={{
+                              background:
+                                "linear-gradient(135deg, #7C3AED, #A78BFA)",
+                            }}
+                          >
+                            {getUnitIcon(record.unit)}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex flex-wrap items-center gap-2 mb-1">
+                              {itemName && (
+                                <span className="px-2 py-0.5 rounded-md text-xs font-semibold bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300">
+                                  {itemName}
+                                </span>
+                              )}
+                              <span className="font-bold text-lg text-gray-800 dark:text-gray-200">
+                                {record.quantity} {record.unit}
+                              </span>
+                              <span className="text-gray-400 dark:text-gray-500">
+                                ×
+                              </span>
+                              <span className="text-gray-600 dark:text-gray-400 font-medium">
+                                ₹{record.rate}
+                              </span>
+                              <span className="text-gray-400 dark:text-gray-500">
+                                =
+                              </span>
+                              <span className="font-bold text-xl text-green-600 dark:text-green-400">
+                                {formatCurrency(record.totalAmount)}
+                              </span>
+                            </div>
+                            <div className="flex items-center text-sm text-gray-500 dark:text-gray-500 gap-4">
+                              <span className="flex items-center">
+                                <Calendar className="w-3 h-3 mr-1" />
+                                {new Date(record.date).toLocaleDateString(
+                                  "en-IN",
+                                  {
+                                    weekday: "short",
+                                    day: "numeric",
+                                    month: "short",
+                                  }
+                                )}
+                              </span>
+                              {rest && (
+                                <span className="flex items-center">
+                                  <FileText className="w-3 h-3 mr-1" />
+                                  {rest}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => void handleDeleteRecord(record.id)}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </CardContent>

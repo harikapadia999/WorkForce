@@ -1,1 +1,1 @@
-export type { Employee } from "@/types/employee"
+export type { Employee } from "@/types/employee";

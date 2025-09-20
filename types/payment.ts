@@ -1,29 +1,29 @@
 export interface PaymentMethod {
-  id: string
-  name: string
-  type: "card" | "upi" | "netbanking" | "wallet"
-  icon: string
-  enabled: boolean
+  id: string;
+  name: string;
+  type: "card" | "upi" | "netbanking" | "wallet";
+  icon: string;
+  enabled: boolean;
 }
 
 export interface PaymentTransaction {
-  id: string
-  amount: number
-  currency: "INR"
-  status: "pending" | "processing" | "success" | "failed" | "cancelled"
-  method: PaymentMethod
-  createdAt: string
-  completedAt?: string
-  failureReason?: string
-  gatewayTransactionId?: string
+  id: string;
+  amount: number;
+  currency: "INR";
+  status: "pending" | "processing" | "success" | "failed" | "cancelled";
+  method: PaymentMethod;
+  createdAt: string;
+  completedAt?: string;
+  failureReason?: string;
+  gatewayTransactionId?: string;
 }
 
 export interface PaymentGatewayConfig {
-  merchantId: string
-  apiKey: string
-  environment: "sandbox" | "production"
-  supportedMethods: PaymentMethod[]
-  webhookUrl: string
+  merchantId: string;
+  apiKey: string;
+  environment: "sandbox" | "production";
+  supportedMethods: PaymentMethod[];
+  webhookUrl: string;
 }
 
 export const INDIAN_PAYMENT_METHODS: PaymentMethod[] = [
@@ -55,7 +55,7 @@ export const INDIAN_PAYMENT_METHODS: PaymentMethod[] = [
     icon: "👛",
     enabled: true,
   },
-]
+];
 
 export const SUPPORTED_BANKS = [
   { id: "sbi", name: "State Bank of India", logo: "🏦" },
@@ -66,7 +66,7 @@ export const SUPPORTED_BANKS = [
   { id: "pnb", name: "Punjab National Bank", logo: "🏦" },
   { id: "bob", name: "Bank of Baroda", logo: "🏦" },
   { id: "canara", name: "Canara Bank", logo: "🏦" },
-]
+];
 
 export const SUPPORTED_WALLETS = [
   { id: "paytm", name: "Paytm Wallet", logo: "💳" },
@@ -75,4 +75,4 @@ export const SUPPORTED_WALLETS = [
   { id: "amazonpay", name: "Amazon Pay", logo: "🛒" },
   { id: "mobikwik", name: "MobiKwik", logo: "💳" },
   { id: "freecharge", name: "FreeCharge", logo: "⚡" },
-]
+];

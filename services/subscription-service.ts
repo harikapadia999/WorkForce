@@ -10,14 +10,26 @@ import {
   limit,
   getDocs,
   addDoc,
-} from "firebase/firestore"
-import { db } from "@/lib/firebase"
-import type { Subscription, SubscriptionPayment, SubscriptionTier } from "@/types/subscription"
+} from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import type {
+  Subscription,
+  SubscriptionPayment,
+  SubscriptionTier,
+} from "@/types/subscription";
 
 export class SubscriptionService {
-  static async createSubscription(userId: string, tier: SubscriptionTier, priceId: string): Promise<Subscription> {
-    const now = new Date()
-    const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate())
+  static async createSubscription(
+    userId: string,
+    tier: SubscriptionTier,
+    priceId: string
+  ): Promise<Subscription> {
+    const now = new Date();
+    const nextMonth = new Date(
+      now.getFullYear(),
+      now.getMonth() + 1,
+      now.getDate()
+    );
 
     const subscription: Subscription = {
       id: crypto.randomUUID(),
@@ -31,32 +43,34 @@ export class SubscriptionService {
       customerId: `cust_${userId}`,
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
-    }
+    };
 
-    await setDoc(doc(db, "subscriptions", subscription.id), subscription)
-    return subscription
+    await setDoc(doc(db, "subscriptions", subscription.id), subscription);
+    return subscription;
   }
 
-  static async getUserSubscription(userId: string): Promise<Subscription | null> {
+  static async getUserSubscription(
+    userId: string
+  ): Promise<Subscription | null> {
     const q = query(
       collection(db, "subscriptions"),
       where("userId", "==", userId),
       where("status", "in", ["active", "past_due"]),
       orderBy("createdAt", "desc"),
-      limit(1),
-    )
+      limit(1)
+    );
 
-    const snapshot = await getDocs(q)
-    if (snapshot.empty) return null
+    const snapshot = await getDocs(q);
+    if (snapshot.empty) return null;
 
-    return snapshot.docs[0].data() as Subscription
+    return snapshot.docs[0].data() as Subscription;
   }
 
   static async recordPayment(
     subscriptionId: string,
     amount: number,
     paymentMethod: string,
-    transactionId?: string,
+    transactionId?: string
   ): Promise<SubscriptionPayment> {
     const payment: SubscriptionPayment = {
       id: crypto.randomUUID(),
@@ -68,32 +82,36 @@ export class SubscriptionService {
       transactionId,
       paidAt: new Date().toISOString(),
       createdAt: new Date().toISOString(),
-    }
+    };
 
-    await addDoc(collection(db, "subscription_payments"), payment)
+    await addDoc(collection(db, "subscription_payments"), payment);
 
     // Update subscription period
-    const subscription = await getDoc(doc(db, "subscriptions", subscriptionId))
+    const subscription = await getDoc(doc(db, "subscriptions", subscriptionId));
     if (subscription.exists()) {
-      const data = subscription.data() as Subscription
-      const currentEnd = new Date(data.currentPeriodEnd)
-      const newEnd = new Date(currentEnd.getFullYear(), currentEnd.getMonth() + 1, currentEnd.getDate())
+      const data = subscription.data() as Subscription;
+      const currentEnd = new Date(data.currentPeriodEnd);
+      const newEnd = new Date(
+        currentEnd.getFullYear(),
+        currentEnd.getMonth() + 1,
+        currentEnd.getDate()
+      );
 
       await updateDoc(doc(db, "subscriptions", subscriptionId), {
         currentPeriodEnd: newEnd.toISOString(),
         status: "active",
         updatedAt: new Date().toISOString(),
-      })
+      });
     }
 
-    return payment
+    return payment;
   }
 
   static async cancelSubscription(subscriptionId: string): Promise<void> {
     await updateDoc(doc(db, "subscriptions", subscriptionId), {
       cancelAtPeriodEnd: true,
       updatedAt: new Date().toISOString(),
-    })
+    });
   }
 
   static async reactivateSubscription(subscriptionId: string): Promise<void> {
@@ -101,32 +119,32 @@ export class SubscriptionService {
       cancelAtPeriodEnd: false,
       status: "active",
       updatedAt: new Date().toISOString(),
-    })
+    });
   }
 
   static async checkAndUpdateExpiredSubscriptions(): Promise<void> {
-    const now = new Date()
+    const now = new Date();
     const q = query(
       collection(db, "subscriptions"),
       where("status", "==", "active"),
-      where("currentPeriodEnd", "<=", now.toISOString()),
-    )
+      where("currentPeriodEnd", "<=", now.toISOString())
+    );
 
-    const snapshot = await getDocs(q)
+    const snapshot = await getDocs(q);
 
     for (const docSnapshot of snapshot.docs) {
-      const subscription = docSnapshot.data() as Subscription
+      const subscription = docSnapshot.data() as Subscription;
 
       if (subscription.cancelAtPeriodEnd) {
         await updateDoc(doc(db, "subscriptions", subscription.id), {
           status: "cancelled",
           updatedAt: now.toISOString(),
-        })
+        });
       } else {
         await updateDoc(doc(db, "subscriptions", subscription.id), {
           status: "past_due",
           updatedAt: now.toISOString(),
-        })
+        });
       }
     }
   }

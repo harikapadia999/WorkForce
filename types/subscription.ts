@@ -119,7 +119,7 @@ export const SUBSCRIPTION_FEATURES: SubscriptionFeature[] = [
 
 export const SUBSCRIPTION_PRICES = {
   pro: {
-    monthly: 999,
-    yearly: 9999, // 2 months free
+    monthly: 99,
+    yearly: 999, // 2 months free
   },
 };

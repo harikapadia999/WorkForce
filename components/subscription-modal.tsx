@@ -1,38 +1,44 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { useSubscription } from "@/hooks/useSubscription"
-import { SUBSCRIPTION_FEATURES } from "@/types/subscription"
-import { Check, X, Crown, Sparkles } from "lucide-react"
-import { PaymentGateway } from "./payment-gateway"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useSubscription } from "@/hooks/useSubscription";
+import { SUBSCRIPTION_FEATURES } from "@/types/subscription";
+import { Check, X, Crown, Sparkles } from "lucide-react";
+import { PaymentGateway } from "./payment-gateway";
 
 interface SubscriptionModalProps {
-  isOpen: boolean
-  onClose: () => void
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 export function SubscriptionModal({ isOpen, onClose }: SubscriptionModalProps) {
-  const { tier, upgradeToPro, downgradeToFree } = useSubscription()
-  const [showPayment, setShowPayment] = useState(false)
+  const { tier, upgradeToPro, downgradeToFree } = useSubscription();
+  const [showPayment, setShowPayment] = useState(false);
 
   const handleUpgrade = () => {
-    setShowPayment(true)
-  }
+    setShowPayment(true);
+  };
 
   const handlePaymentSuccess = () => {
-    upgradeToPro()
-    setShowPayment(false)
-    onClose()
-  }
+    upgradeToPro();
+    setShowPayment(false);
+    onClose();
+  };
 
   const handleDowngrade = () => {
-    downgradeToFree()
-    onClose()
-  }
+    downgradeToFree();
+    onClose();
+  };
 
-  const PRO_PRICE = 999 // ₹999 per month
+  const PRO_PRICE = 999; // ₹999 per month
 
   return (
     <>
@@ -60,9 +66,15 @@ export function SubscriptionModal({ isOpen, onClose }: SubscriptionModalProps) {
                 <div className="w-16 h-16 bg-gradient-to-br from-gray-400 to-gray-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Sparkles className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">Free</h3>
-                <div className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-1">₹0</div>
-                <p className="text-gray-600 dark:text-gray-400">Perfect for small teams</p>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                  Free
+                </h3>
+                <div className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+                  ₹0
+                </div>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Perfect for small teams
+                </p>
               </div>
 
               <div className="space-y-4 mb-8">
@@ -70,7 +82,9 @@ export function SubscriptionModal({ isOpen, onClose }: SubscriptionModalProps) {
                   <div key={index} className="flex items-center space-x-3">
                     <div className="text-xl">{feature.icon}</div>
                     <div className="flex-1">
-                      <span className="text-gray-900 dark:text-gray-100 font-medium">{feature.name}</span>
+                      <span className="text-gray-900 dark:text-gray-100 font-medium">
+                        {feature.name}
+                      </span>
                       <div className="text-sm text-gray-600 dark:text-gray-400">
                         {typeof feature.free === "boolean" ? (
                           feature.free ? (
@@ -85,7 +99,9 @@ export function SubscriptionModal({ isOpen, onClose }: SubscriptionModalProps) {
                             </span>
                           )
                         ) : (
-                          <span className="text-blue-600 dark:text-blue-400">{feature.free}</span>
+                          <span className="text-blue-600 dark:text-blue-400">
+                            {feature.free}
+                          </span>
                         )}
                       </div>
                     </div>
@@ -125,7 +141,9 @@ export function SubscriptionModal({ isOpen, onClose }: SubscriptionModalProps) {
                 <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Crown className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">Pro</h3>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                  Pro
+                </h3>
                 <div className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent mb-1">
                   ₹{PRO_PRICE.toLocaleString("en-IN")}
                 </div>
@@ -137,7 +155,9 @@ export function SubscriptionModal({ isOpen, onClose }: SubscriptionModalProps) {
                   <div key={index} className="flex items-center space-x-3">
                     <div className="text-xl">{feature.icon}</div>
                     <div className="flex-1">
-                      <span className="text-gray-900 dark:text-gray-100 font-medium">{feature.name}</span>
+                      <span className="text-gray-900 dark:text-gray-100 font-medium">
+                        {feature.name}
+                      </span>
                       <div className="text-sm text-gray-600 dark:text-gray-400">
                         {typeof feature.pro === "boolean" ? (
                           feature.pro ? (
@@ -152,7 +172,9 @@ export function SubscriptionModal({ isOpen, onClose }: SubscriptionModalProps) {
                             </span>
                           )
                         ) : (
-                          <span className="text-blue-600 dark:text-blue-400">{feature.pro}</span>
+                          <span className="text-blue-600 dark:text-blue-400">
+                            {feature.pro}
+                          </span>
                         )}
                       </div>
                     </div>
@@ -169,14 +191,19 @@ export function SubscriptionModal({ isOpen, onClose }: SubscriptionModalProps) {
                     : "apple-button bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg"
                 }`}
               >
-                {tier === "pro" ? "Current Plan" : `Upgrade to Pro - ₹${PRO_PRICE.toLocaleString("en-IN")}/month`}
+                {tier === "pro"
+                  ? "Current Plan"
+                  : `Upgrade to Pro - ₹${PRO_PRICE.toLocaleString(
+                      "en-IN"
+                    )}/month`}
               </Button>
             </div>
           </div>
 
           <div className="mt-8 text-center">
             <p className="text-sm text-gray-500 dark:text-gray-500">
-              All plans include 24/7 support and regular updates. Secure payments powered by Indian payment gateways.
+              All plans include 24/7 support and regular updates. Secure
+              payments powered by Indian payment gateways.
             </p>
           </div>
         </DialogContent>
@@ -190,5 +217,5 @@ export function SubscriptionModal({ isOpen, onClose }: SubscriptionModalProps) {
         amount={PRO_PRICE}
       />
     </>
-  )
+  );
 }
