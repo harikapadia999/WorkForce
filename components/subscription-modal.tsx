@@ -37,13 +37,14 @@ export function SubscriptionModal({ isOpen, onClose }: SubscriptionModalProps) {
     downgradeToFree();
     onClose();
   };
-  // const PRO_MONTHLY_PRICE = 99; // ₹99 per month
-  const PRO_PRICE = 999; // ₹999 per month
+  const PRO_MONTHLY_PRICE = 199; // ₹99 per month
+  const PRO_PRICE = 999; //
+  const DIS_PRICE = 2399; //
 
   return (
     <>
       <Dialog open={isOpen && !showPayment} onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto apple-modal">
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto apple-modal">
           <DialogHeader className="text-center pb-6">
             <DialogTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
               Choose Your Plan
@@ -53,7 +54,7 @@ export function SubscriptionModal({ isOpen, onClose }: SubscriptionModalProps) {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid md:grid-cols-2 gap-8 mt-8">
+          <div className="grid md:grid-cols-3 gap-4 mt-4">
             {/* Free Plan */}
             <div
               className={`apple-card rounded-3xl p-8 border-2 transition-all duration-300 ${
@@ -123,19 +124,19 @@ export function SubscriptionModal({ isOpen, onClose }: SubscriptionModalProps) {
             </div>
 
             {/* Pro Plan per Month*/}
-            {/* <div
+            <div
               className={`apple-card rounded-3xl p-8 border-2 transition-all duration-300 relative ${
                 tier === "pro"
                   ? "border-blue-500 dark:border-blue-400 shadow-lg shadow-blue-500/20"
                   : "border-blue-200 dark:border-blue-800 hover:border-blue-300 dark:hover:border-blue-700"
               }`}
-            > */}
-            {/* Popular Badge */}
-            {/* <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+            >
+              {/* Popular Badge */}
+              {/* <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                 <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-full text-sm font-semibold">
                   Most Popular
                 </div>
-              </div>
+              </div> */}
 
               <div className="text-center mb-6">
                 <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -148,9 +149,9 @@ export function SubscriptionModal({ isOpen, onClose }: SubscriptionModalProps) {
                   ₹{PRO_MONTHLY_PRICE.toLocaleString("en-IN")}
                 </div>
                 <p className="text-gray-600 dark:text-gray-400">per month</p>
-              </div> */}
+              </div>
 
-            {/* <div className="space-y-4 mb-8">
+              <div className="space-y-4 mb-8">
                 {SUBSCRIPTION_FEATURES.map((feature, index) => (
                   <div key={index} className="flex items-center space-x-3">
                     <div className="text-xl">{feature.icon}</div>
@@ -196,8 +197,8 @@ export function SubscriptionModal({ isOpen, onClose }: SubscriptionModalProps) {
                   : `Upgrade to Pro - ₹${PRO_MONTHLY_PRICE.toLocaleString(
                       "en-IN"
                     )}/month`}
-              </Button> */}
-            {/* </div> */}
+              </Button>
+            </div>
 
             {/* Pro Plan per Year*/}
             <div
@@ -226,7 +227,7 @@ export function SubscriptionModal({ isOpen, onClose }: SubscriptionModalProps) {
                 <div className="mb-1">
                   {/* Original Price with Strike */}
                   <span className="text-lg text-gray-500 line-through mr-2">
-                    ₹{(2399).toLocaleString("en-IN")}
+                    ₹{DIS_PRICE.toLocaleString("en-IN")}
                   </span>
 
                   {/* Discounted Price */}
@@ -234,6 +235,12 @@ export function SubscriptionModal({ isOpen, onClose }: SubscriptionModalProps) {
                     ₹{PRO_PRICE.toLocaleString("en-IN")}
                   </span>
                 </div>
+
+                {/* Discount Details */}
+                <p className="text-green-600 dark:text-green-400 font-semibold mb-1">
+                  You save ₹{(DIS_PRICE - PRO_PRICE).toLocaleString("en-IN")} (
+                  {Math.round(((DIS_PRICE - PRO_PRICE) / DIS_PRICE) * 100)}%)
+                </p>
 
                 <p className="text-gray-600 dark:text-gray-400">per year</p>
               </div>
@@ -292,6 +299,16 @@ export function SubscriptionModal({ isOpen, onClose }: SubscriptionModalProps) {
             <p className="text-sm text-gray-500 dark:text-gray-500">
               All plans include 24/7 support and regular updates. Secure
               payments powered by Indian payment gateways.
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
+              For support, feedback, or if you encounter any issues, reach out
+              to us at{" "}
+              <a
+                href="mailto:workforcepro9@gmail.com"
+                className="text-blue-600 dark:text-blue-400 underline"
+              >
+                workforcepro9@gmail.com
+              </a>
             </p>
           </div>
         </DialogContent>
