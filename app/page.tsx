@@ -25,6 +25,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { SubscriptionBanner } from "@/components/subscription-banner";
 import { SubscriptionModal } from "@/components/subscription-modal";
 import { DirectPaymentDialog } from "@/components/direct-payment-dialog";
+import { ItemsManager } from "@/components/items/items-manager";
 
 // Import utility functions
 import {
@@ -308,7 +309,7 @@ function MainApp() {
         {/* Main Content */}
         <div className="apple-card rounded-3xl p-8 apple-float-delayed">
           <Tabs defaultValue="employees" className="space-y-6">
-            <TabsList className="apple-tabs grid w-full grid-cols-2 p-2 rounded-2xl">
+            <TabsList className="apple-tabs grid w-full grid-cols-3 p-2 rounded-2xl">
               <TabsTrigger
                 value="employees"
                 className="apple-tab-trigger rounded-xl py-3 px-6 font-semibold transition-all duration-300"
@@ -320,6 +321,12 @@ function MainApp() {
                 className="apple-tab-trigger rounded-xl py-3 px-6 font-semibold transition-all duration-300"
               >
                 Attendance
+              </TabsTrigger>
+              <TabsTrigger
+                value="items"
+                className="apple-tab-trigger rounded-xl py-3 px-6 font-semibold transition-all duration-300"
+              >
+                Items
               </TabsTrigger>
             </TabsList>
 
@@ -338,6 +345,9 @@ function MainApp() {
                 employees={employees}
                 updateEmployee={updateEmployee}
               />
+            </TabsContent>
+            <TabsContent value="items" className="space-y-6">
+              <ItemsManager />
             </TabsContent>
           </Tabs>
         </div>

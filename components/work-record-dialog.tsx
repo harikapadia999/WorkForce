@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 import { formatCurrency } from "@/utils/salary-calculator";
 import { logActivity, logView } from "@/services/activity-log-service";
+import { useItems } from "@/hooks/useItems";
 
 type UnitType = "kg" | "meter" | "piece";
 
@@ -62,10 +63,32 @@ export function WorkRecordDialog({
   );
 
   // Item catalog (daily per-unit)
-  const catalog = useMemo(
+  // const catalog = useMemo(
+  //   () => (employee.salaryConfig as any)?.daily?.perUnitCatalog || [],
+  //   [employee.salaryConfig]
+  // );
+  // Item catalog (daily per-unit) + global catalog
+  const { items: globalItems } = useItems();
+  const localCatalog = useMemo(
     () => (employee.salaryConfig as any)?.daily?.perUnitCatalog || [],
     [employee.salaryConfig]
   );
+  const catalog = useMemo(() => {
+    // Convert global items to the same shape as perUnitCatalog
+    const globals = (globalItems || []).map((g) => ({
+      id: g.id,
+      name: g.name,
+      unit: g.unit,
+      rate: g.rate,
+    }));
+    // Merge without duplicates (by name+unit)
+    const key = (x: any) => `${String(x.name).toLowerCase()}|${x.unit}`;
+    const map = new Map<string, any>();
+    for (const it of [...globals, ...localCatalog]) {
+      map.set(key(it), it);
+    }
+    return Array.from(map.values());
+  }, [globalItems, localCatalog]);
 
   const [selectedItemId, setSelectedItemId] = useState<string>("");
   const [unit, setUnit] = useState<UnitType>("kg");
