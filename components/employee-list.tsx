@@ -25,6 +25,7 @@ import {
   calculateNetSalary,
   formatCurrency,
   calculateAttendanceGrossForMonth,
+  getDailyWorkSummary,
 } from "@/utils/salary-calculator";
 import { EmployeeProfile } from "./employee-profile";
 import { WorkRecordDialog } from "./work-record-dialog";
@@ -54,6 +55,10 @@ export function EmployeeList({
     useState<Employee | null>(null);
   const { canUseWorkRecords, canAddAdvance, isPro } = useSubscription();
 
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+
   const filteredEmployees = employees.filter(
     (employee) =>
       employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -66,19 +71,44 @@ export function EmployeeList({
     const { salaryType, salaryConfig } = employee;
     switch (salaryType) {
       case "hourly":
-        return `₹${salaryConfig.hourly?.rate}/hr (${salaryConfig.hourly?.hoursPerWeek}h/week)`;
-      case "daily":
-        return `₹${salaryConfig.daily?.rate}/day (${salaryConfig.daily?.workingDays} days/month)`;
+        return `₹${salaryConfig.hourly?.rate ?? 0}/hr (${
+          salaryConfig.hourly?.hoursPerWeek ?? 0
+        }h/week)`;
+      case "daily": {
+        const summary = getDailyWorkSummary(employee, year, month);
+        const effectiveRate =
+          summary.avgDailyAmount ?? summary.configuredRate ?? 0;
+        const rateText = formatCurrency(effectiveRate);
+        let daysDisplay: string;
+        let suffix = "days/month";
+
+        if (summary.daysWithWork > 0) {
+          daysDisplay = `${summary.daysWithWork}`;
+        } else if (summary.configuredWorkingDays !== null) {
+          daysDisplay = `${summary.configuredWorkingDays}`;
+        } else {
+          daysDisplay = "Set working days";
+          suffix = "";
+        }
+
+        return `${rateText}/day (${daysDisplay}${suffix ? ` ${suffix}` : ""})`;
+      }
       case "monthly":
-        return `₹${salaryConfig.monthly?.amount?.toLocaleString(
+        return `₹${(salaryConfig.monthly?.amount ?? 0).toLocaleString(
           "en-IN"
         )}/month`;
       case "piece-rate":
-        return `₹${salaryConfig.pieceRate?.ratePerPiece}/piece (target: ${salaryConfig.pieceRate?.targetPieces})`;
+        return `₹${salaryConfig.pieceRate?.ratePerPiece ?? 0}/piece (target: ${
+          salaryConfig.pieceRate?.targetPieces ?? 0
+        })`;
       case "weight-based":
-        return `₹${salaryConfig.weightBased?.ratePerKg}/kg (target: ${salaryConfig.weightBased?.targetWeight}kg)`;
+        return `₹${salaryConfig.weightBased?.ratePerKg ?? 0}/kg (target: ${
+          salaryConfig.weightBased?.targetWeight ?? 0
+        }kg)`;
       case "meter-based":
-        return `₹${salaryConfig.meterBased?.ratePerMeter}/m (target: ${salaryConfig.meterBased?.targetMeters}m)`;
+        return `₹${salaryConfig.meterBased?.ratePerMeter ?? 0}/m (target: ${
+          salaryConfig.meterBased?.targetMeters ?? 0
+        }m)`;
       case "dynamic-date":
         const startDate = salaryConfig.dynamicDate?.startDate
           ? new Date(salaryConfig.dynamicDate.startDate).toLocaleDateString()
@@ -86,7 +116,9 @@ export function EmployeeList({
         const endDate = salaryConfig.dynamicDate?.endDate
           ? new Date(salaryConfig.dynamicDate.endDate).toLocaleDateString()
           : "Not set";
-        return `₹${salaryConfig.dynamicDate?.baseAmount} + ${salaryConfig.dynamicDate?.bonusRate}% bonus (${startDate} - ${endDate})`;
+        return `₹${salaryConfig.dynamicDate?.baseAmount ?? 0} + ${
+          salaryConfig.dynamicDate?.bonusRate ?? 0
+        }% bonus (${startDate} - ${endDate})`;
       default:
         return "Not configured";
     }
@@ -122,10 +154,6 @@ export function EmployeeList({
     }
     setSelectedWorkEmployee(employee);
   };
-
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
 
   return (
     <div className="space-y-8">

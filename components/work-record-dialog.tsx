@@ -34,7 +34,7 @@ import {
   TrendingUp,
   Tag,
 } from "lucide-react";
-import { formatCurrency } from "@/utils/salary-calculator";
+import { formatCurrency, getDailyWorkSummary } from "@/utils/salary-calculator";
 import { logActivity, logView } from "@/services/activity-log-service";
 import { useItems } from "@/hooks/useItems";
 
@@ -186,6 +186,23 @@ export function WorkRecordDialog({
       before: rec,
     });
   };
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+
+  const summary = getDailyWorkSummary(employee, year, month);
+  const rateText = formatCurrency(effectiveRate);
+  let daysDisplay: string;
+  let suffix = "days/month";
+
+  if (summary.daysWithWork > 0) {
+    daysDisplay = `${summary.daysWithWork}`;
+  } else if (summary.configuredWorkingDays !== null) {
+    daysDisplay = `${summary.configuredWorkingDays}`;
+  } else {
+    daysDisplay = "Set working days";
+    suffix = "";
+  }
 
   const getSelectedMonthRecords = () => {
     return (employee.workRecords || [])
@@ -535,9 +552,7 @@ export function WorkRecordDialog({
                 <div className="bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-400 dark:to-blue-500 p-4 rounded-xl text-white shadow-lg apple-hover">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-3xl font-bold">
-                        {displayRecords.length}
-                      </p>
+                      <p className="text-3xl font-bold">{daysDisplay}</p>
                       <p className="text-blue-100 dark:text-blue-200 text-sm font-medium">
                         Work Days
                       </p>

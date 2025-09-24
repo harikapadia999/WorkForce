@@ -207,7 +207,7 @@ export function SalaryConfigForm({
                 </CardHeader> */}
                 <div className="p-6 space-y-5">
                   {/* Fallback single-unit rates */}
-                  <div>
+                  {/* <div>
                     <Label className="text-sm font-semibold">
                       Fallback Unit Rates
                     </Label>
@@ -242,7 +242,7 @@ export function SalaryConfigForm({
                         </div>
                       ))}
                     </div>
-                  </div>
+                  </div> */}
 
                   {/* Toggle catalog */}
                   <div className="space-y-2">

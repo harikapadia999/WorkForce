@@ -306,3 +306,59 @@ export function calculateAttendanceGrossForMonth(
   );
   return baseMonthly * ratio;
 }
+
+/**
+ * Returns an average daily earning figure for the current month based on logged work and configured base rate.
+ * Used for displaying daily salary information without showing "undefined".
+ */
+export function getDailyWorkSummary(
+  employee: Employee,
+  year = new Date().getFullYear(),
+  month = new Date().getMonth()
+): {
+  avgDailyAmount: number | null;
+  daysWithWork: number;
+  configuredRate: number | null;
+  configuredWorkingDays: number | null;
+  totalWorkAmount: number;
+} {
+  const dailyConfig = employee.salaryConfig.daily;
+  const configuredRate =
+    typeof dailyConfig?.rate === "number" ? dailyConfig.rate : null;
+  const configuredWorkingDays =
+    typeof dailyConfig?.workingDays === "number" &&
+    !Number.isNaN(dailyConfig.workingDays)
+      ? dailyConfig.workingDays
+      : null;
+
+  const monthlyWorkRecords = (employee.workRecords || []).filter((record) => {
+    const recordDate = new Date(record.date);
+    return recordDate.getFullYear() === year && recordDate.getMonth() === month;
+  });
+
+  const daysWithWorkSet = new Set<string>();
+  let totalWorkAmount = 0;
+
+  for (const record of monthlyWorkRecords) {
+    if (record.totalAmount > 0) {
+      totalWorkAmount += record.totalAmount;
+    }
+    daysWithWorkSet.add(new Date(record.date).toDateString());
+  }
+
+  const daysWithWork = daysWithWorkSet.size;
+  const totalBasePay =
+    configuredRate && daysWithWork > 0 ? configuredRate * daysWithWork : 0;
+  const calculatedAverage =
+    daysWithWork > 0
+      ? (totalWorkAmount + totalBasePay) / daysWithWork
+      : configuredRate ?? null;
+
+  return {
+    avgDailyAmount: calculatedAverage ?? null,
+    daysWithWork,
+    configuredRate,
+    configuredWorkingDays,
+    totalWorkAmount,
+  };
+}
