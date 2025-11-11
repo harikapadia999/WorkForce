@@ -243,7 +243,29 @@ export function SalaryConfigForm({
                       ))}
                     </div>
                   </div> */}
-
+                  <div className="space-y-3">
+                    <Label className="text-gray-700 dark:text-gray-300 font-semibold">
+                      Base Amount (₹)
+                    </Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={config.daily?.rate || ""}
+                      onChange={(e) =>
+                        updateConfig({
+                          daily: {
+                            rate: Number.parseFloat(e.target.value) || 0,
+                            workingDays: config.daily?.workingDays || 22,
+                            hasPerUnitWork:
+                              config.daily?.hasPerUnitWork || false,
+                            perUnitRates: config.daily?.perUnitRates || {},
+                          },
+                        })
+                      }
+                      className="apple-input rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-indigo-500 dark:focus:border-indigo-400 bg-white dark:bg-gray-800 px-4 py-3 text-lg"
+                      placeholder="0.00"
+                    />
+                  </div>
                   {/* Toggle catalog */}
                   <div className="space-y-2">
                     <Label className="text-sm font-semibold">

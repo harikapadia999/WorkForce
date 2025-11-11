@@ -116,9 +116,9 @@ export function EmployeeList({
         const endDate = salaryConfig.dynamicDate?.endDate
           ? new Date(salaryConfig.dynamicDate.endDate).toLocaleDateString()
           : "Not set";
-        return `₹${salaryConfig.dynamicDate?.baseAmount ?? 0} + ${
-          salaryConfig.dynamicDate?.bonusRate ?? 0
-        }% bonus (${startDate} - ${endDate})`;
+        return `₹${
+          salaryConfig.dynamicDate?.baseAmount ?? 0
+        }  (${startDate} - ${endDate})`;
       default:
         return "Not configured";
     }
