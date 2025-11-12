@@ -262,20 +262,20 @@
 }
 
 .apple-float {
-  animation: appleFloat 6s ease-in-out infinite;
+  animation: appleFloat 8s ease-in-out infinite;
 }
 
 .apple-float-delayed {
-  animation: appleFloat 6s ease-in-out infinite;
+  animation: appleFloat 8s ease-in-out infinite;
   animation-delay: -3s;
 }
 
 .apple-float-bg {
-  animation: appleFloatBg 8s ease-in-out infinite;
+  animation: appleFloatBg 10s ease-in-out infinite;
 }
 
 .apple-float-bg-delayed {
-  animation: appleFloatBg 8s ease-in-out infinite;
+  animation: appleFloatBg 10s ease-in-out infinite;
   animation-delay: -4s;
 }
 

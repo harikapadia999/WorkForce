@@ -109,10 +109,45 @@ export function calculateMonthlySalary(employee: Employee): number {
         4.33;
       break;
     case "daily":
-      const baseDailySalary =
-        (salaryConfig.daily?.rate || 0) *
-        (salaryConfig.daily?.workingDays || 0);
+      // const baseDailySalary =
+      //   (salaryConfig.daily?.rate || 0) *
+      //   (salaryConfig.daily?.workingDays || 0);
+      const rate = salaryConfig.daily?.rate || 0;
 
+      // Calculate effective working days from attendance records
+      const currentMonth = new Date().getMonth();
+      const currentYear = new Date().getFullYear();
+
+      const attendanceForMonth = (employee.attendanceRecords || []).filter(
+        (r) => {
+          const d = new Date(r.date);
+          return (
+            d.getFullYear() === currentYear && d.getMonth() === currentMonth
+          );
+        }
+      );
+
+      let effectiveDays = 0;
+      for (const r of attendanceForMonth) {
+        switch (r.status) {
+          case "present":
+            effectiveDays += 1;
+            break;
+          case "half-day":
+            effectiveDays += 0.5;
+            break;
+          case "late-come":
+          case "early-leave":
+            effectiveDays += 0.75;
+            break;
+          case "absent":
+          default:
+            break; // adds 0
+        }
+      }
+
+      // Base salary = rate × effective working days
+      const baseDailySalary = rate * effectiveDays;
       // Add work records earnings for current month if per-unit work is enabled
       let workRecordsEarnings = 0;
       if (salaryConfig.daily?.hasPerUnitWork) {
