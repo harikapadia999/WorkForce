@@ -414,8 +414,9 @@ export function EmployeeForm({
               </div>
             </div>
 
-            {/* Payment Details Section */}
-            <div className="apple-card-inner rounded-3xl p-8 bg-white dark:bg-gray-800 shadow-lg apple-hover">
+            {/* Payment Details Section
+            
+                        <div className="apple-card-inner rounded-3xl p-8 bg-white dark:bg-gray-800 shadow-lg apple-hover">
               <div className="flex items-center space-x-3 mb-6">
                 <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center">
                   <Banknote className="w-6 h-6 text-white" />
@@ -566,6 +567,9 @@ export function EmployeeForm({
                 )}
               </div>
             </div>
+
+            
+            */}
 
             {/* Action Buttons */}
             <div className="flex gap-4 pt-6">

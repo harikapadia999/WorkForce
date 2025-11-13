@@ -95,6 +95,7 @@
 // export function formatCurrency(amount: number): string {
 //   return `₹${amount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 // }
+import { startOfDay, endOfDay } from "date-fns";
 import type { Employee } from "./employee";
 
 export function calculateMonthlySalary(employee: Employee): number {
@@ -185,11 +186,63 @@ export function calculateMonthlySalary(employee: Employee): number {
         (salaryConfig.meterBased?.ratePerMeter || 0) *
         (salaryConfig.meterBased?.targetMeters || 0);
       break;
-    case "dynamic-date":
-      const baseAmount = salaryConfig.dynamicDate?.baseAmount || 0;
-      const bonusRate = salaryConfig.dynamicDate?.bonusRate || 0;
-      monthlySalary = baseAmount + (baseAmount * bonusRate) / 100;
+    // case "dynamic-date":
+    //   const baseAmount = salaryConfig.dynamicDate?.baseAmount || 0;
+    //   monthlySalary = baseAmount;
+    //   break;
+    case "dynamic-date": {
+      const { dynamicDate } = salaryConfig;
+      const baseAmount = dynamicDate?.baseAmount || 0;
+      const startDate = dynamicDate?.startDate
+        ? new Date(dynamicDate.startDate)
+        : null;
+      const endDate = dynamicDate?.endDate
+        ? new Date(dynamicDate.endDate)
+        : null;
+
+      if (!startDate || !endDate) {
+        // If no valid date range is set, just return base amount
+        monthlySalary = baseAmount;
+        break;
+      }
+
+      // Filter attendance records within start–end range
+      const attendanceRecords = (employee.attendanceRecords || []).filter(
+        (r) => {
+          const d = new Date(r.date);
+          return d >= startDate && d <= endDate;
+        }
+      );
+
+      // Calculate effective attendance days
+      let effectiveDays = 0;
+      for (const r of attendanceRecords) {
+        switch (r.status) {
+          case "present":
+            effectiveDays += 1;
+            break;
+          case "half-day":
+            effectiveDays += 0.5;
+            break;
+          case "late-come":
+          case "early-leave":
+            effectiveDays += 0.75;
+            break;
+          default:
+            break; // absent = 0
+        }
+      }
+
+      // Count total days in the dynamic range (inclusive)
+      const expectedDays =
+        (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24) + 1;
+
+      // Prorate base salary based on attendance ratio
+      const ratio = expectedDays > 0 ? effectiveDays / expectedDays : 0;
+      monthlySalary = baseAmount * ratio;
+
       break;
+    }
   }
 
   return monthlySalary;
@@ -307,6 +360,89 @@ export function calculateAttendanceGrossForMonth(
     const hours =
       counts.present * 8 + counts.half * 4 + counts.late * 6 + counts.early * 6; // absent adds 0
     return rate * hours;
+  }
+  // 🗓️ DYNAMIC-DATE SALARY (purely attendance-based within startDate → endDate)
+  // inside calculateAttendanceGrossForMonth(...) replace previous dynamic-date handling with below
+  if (salaryType === "dynamic-date") {
+    const dynamic = salaryConfig.dynamicDate;
+    if (!dynamic) return 0;
+
+    // parse start/end; if invalid, return 0 (or fallback to baseAmount if you want)
+    const dynStart = dynamic.startDate ? new Date(dynamic.startDate) : null;
+    const dynEnd = dynamic.endDate ? new Date(dynamic.endDate) : null;
+    const baseAmount =
+      typeof dynamic.baseAmount === "number" ? dynamic.baseAmount : undefined;
+    const perDayRateConfigured =
+      typeof dynamic.rate === "number" ? dynamic.rate : undefined;
+
+    if (
+      !dynStart ||
+      !dynEnd ||
+      isNaN(dynStart.getTime()) ||
+      isNaN(dynEnd.getTime())
+    ) {
+      // No valid dynamic range — nothing to calculate for this month
+      return 0;
+    }
+
+    // Compute the intersection between dynamic range and the requested month
+    const monthStart = new Date(year, month, 1);
+    const monthEnd = new Date(year, month + 1, 0); // last day of the month
+
+    const rangeStart = dynStart > monthStart ? dynStart : monthStart;
+    const rangeEnd = dynEnd < monthEnd ? dynEnd : monthEnd;
+
+    if (rangeEnd < rangeStart) {
+      // No overlap with this month
+      return 0;
+    }
+
+    // Filter attendance only within the intersection range (inclusive)
+    const rangeRecords = (employee.attendanceRecords || []).filter((r) => {
+      const d = new Date(r.date);
+      return d >= startOfDay(rangeStart) && d <= endOfDay(rangeEnd);
+    });
+
+    // Count weighted attendance days
+    let attendedDays = 0;
+    for (const r of rangeRecords) {
+      switch (r.status) {
+        case "present":
+          attendedDays += 1;
+          break;
+        case "half-day":
+          attendedDays += 0.5;
+          break;
+        case "late-come":
+        case "early-leave":
+          attendedDays += 0.75;
+          break;
+        default:
+          // absent or unknown -> 0
+          break;
+      }
+    }
+
+    // Determine per-day rate:
+    //  - if config provides `rate`, use it
+    //  - else if baseAmount is present, derive per day from total days in dynamic range (inclusive)
+    //  - otherwise fallback to 0
+    const msPerDay = 1000 * 60 * 60 * 24;
+    const totalDaysInDynamicRange =
+      Math.floor((dynEnd.getTime() - dynStart.getTime()) / msPerDay) + 1;
+
+    let perDayRate = 0;
+    if (typeof perDayRateConfigured === "number") {
+      perDayRate = perDayRateConfigured;
+    } else if (typeof baseAmount === "number" && totalDaysInDynamicRange > 0) {
+      perDayRate = baseAmount / totalDaysInDynamicRange;
+    } else {
+      perDayRate = 0;
+    }
+
+    // Final gross for this month = per-day-rate * attendedDays (attendance-only)
+    const gross = perDayRate * attendedDays;
+    return gross;
   }
 
   if (salaryType === "daily") {

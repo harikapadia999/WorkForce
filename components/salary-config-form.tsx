@@ -255,7 +255,7 @@ export function SalaryConfigForm({
                         updateConfig({
                           daily: {
                             rate: Number.parseFloat(e.target.value) || 0,
-                            workingDays: config.daily?.workingDays || 22,
+                            workingDays: config.daily?.workingDays || 26,
                             hasPerUnitWork:
                               config.daily?.hasPerUnitWork || false,
                             perUnitRates: config.daily?.perUnitRates || {},

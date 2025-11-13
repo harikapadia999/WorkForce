@@ -152,13 +152,13 @@ function MainApp() {
               <div className="w-8 h-8  rounded-lg flex items-center justify-center">
                 <img
                   src="/logo.png"
-                  alt="WorkForce Pro Logo"
+                  alt="WorkForce Logo"
                   width={32}
                   height={32}
                 />
               </div>
               <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                WorkForce Pro
+                WorkForce
               </h1>
               {isPro && (
                 <div className="flex items-center space-x-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-2 py-1 rounded-full text-xs font-medium">
